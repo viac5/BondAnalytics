@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Tinkoff.InvestApi" Version="0.6.18" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BondAnalytics.Domain\Domain.csproj" />
+  </ItemGroup>
+
+</Project>
