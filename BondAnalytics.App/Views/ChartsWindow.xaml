@@ -1,0 +1,19 @@
+﻿<Window x:Class="App.Views.ChartsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Графики" Width="400" Height="300">
+
+    <StackPanel Margin="10">
+
+        <TextBlock Text="Выберите график:" FontSize="16" Margin="0 0 0 10"/>
+
+        <ListBox ItemsSource="{Binding AvailableCharts}"
+                 SelectedItem="{Binding SelectedChart}"
+                 Height="150"/>
+
+        <Button Content="Построить"
+                Command="{Binding BuildChartCommand}"
+                Margin="0 10 0 0"/>
+
+    </StackPanel>
+</Window>

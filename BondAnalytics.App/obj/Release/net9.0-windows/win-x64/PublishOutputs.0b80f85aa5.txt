@@ -1,0 +1,4 @@
+D:\learnL-s\BondAnalytics.App\BondAnalytics.App\bin\Release\net9.0-windows\win-x64\publish\App.pdb
+D:\learnL-s\BondAnalytics.App\BondAnalytics.App\bin\Release\net9.0-windows\win-x64\publish\Domain.pdb
+D:\learnL-s\BondAnalytics.App\BondAnalytics.App\bin\Release\net9.0-windows\win-x64\publish\Infrastructure.pdb
+D:\learnL-s\BondAnalytics.App\BondAnalytics.App\bin\Release\net9.0-windows\win-x64\publish\App.exe

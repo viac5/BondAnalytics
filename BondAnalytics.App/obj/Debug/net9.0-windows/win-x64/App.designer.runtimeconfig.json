@@ -1,0 +1,25 @@
+{
+  "runtimeOptions": {
+    "tfm": "net9.0",
+    "frameworks": [
+      {
+        "name": "Microsoft.NETCore.App",
+        "version": "9.0.8"
+      },
+      {
+        "name": "Microsoft.WindowsDesktop.App",
+        "version": "9.0.8"
+      }
+    ],
+    "additionalProbingPaths": [
+      "C:\\Users\\adron\\.dotnet\\store\\|arch|\\|tfm|",
+      "C:\\Users\\adron\\.nuget\\packages",
+      "D:\\Programs\\VSSDK\\NuGetPackages"
+    ],
+    "configProperties": {
+      "System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization": false,
+      "CSWINRT_USE_WINDOWS_UI_XAML_PROJECTIONS": false,
+      "Microsoft.NETCore.DotNetHostPolicy.SetAppPaths": true
+    }
+  }
+}
