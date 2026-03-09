@@ -51,11 +51,35 @@ namespace App.ViewModels
                 if (couponsPerYear <= 0)
                     continue;
 
+                // защитимся от целочисленного деления, которое может дать 0
                 int stepMonths = 12 / couponsPerYear;
+                if (stepMonths <= 0)
+                    stepMonths = 1;
+
                 var date = bond.NextCouponDate.Value.Date;
+
+                // safety: ограничение числа итераций для предотвращения бесконечного цикла при некорректных данных
+                int safety = 0;
+                const int MaxIterations = 1000;
 
                 while (date <= horizonEnd)
                 {
+                    if (++safety > MaxIterations)
+                    {
+                        // Добавляем диагностическую метку в график и прерываем цикл для этой бумаги
+                        PlotModel.Annotations.Add(new TextAnnotation
+                        {
+                            Text = $"Предупреждение: некорректные данные у бумаги {bond.Ticker}, остановлено добавление купонов.",
+                            TextColor = OxyColors.OrangeRed,
+                            Stroke = OxyColors.Transparent,
+                            FontSize = 12,
+                            TextPosition = new DataPoint(0.5, 0.5),
+                            TextHorizontalAlignment = OxyPlot.HorizontalAlignment.Center,
+                            TextVerticalAlignment = OxyPlot.VerticalAlignment.Middle
+                        });
+                        break;
+                    }
+
                     var monthKey = new DateTime(date.Year, date.Month, 1);
 
                     if (!monthBuckets.TryGetValue(monthKey, out var dict))
@@ -76,7 +100,42 @@ namespace App.ViewModels
             }
 
             if (monthBuckets.Count == 0)
+            {
+                // Добавляем сообщение об отсутствии данных
+                PlotModel.Axes.Add(new LinearAxis
+                {
+                    Position = AxisPosition.Bottom,
+                    Minimum = 0,
+                    Maximum = 1,
+                    MajorStep = 1,
+                    LabelFormatter = _ => ""
+                });
+
+                PlotModel.Axes.Add(new LinearAxis
+                {
+                    Position = AxisPosition.Left,
+                    Minimum = 0,
+                    Maximum = 1,
+                    Title = "Купоны, ₽"
+                });
+
+                PlotModel.Annotations.Add(new TextAnnotation
+                {
+                    Text = "Нет данных для отображения гистограммы\n" +
+                           "Возможные причины:\n" +
+                           "- У облигаций не указаны даты следующих купонов\n" +
+                           "- Нулевые или отрицательные значения купонов\n" +
+                           "- Отсутствие купонных выплат",
+                    TextColor = OxyColors.Red,
+                    Stroke = OxyColors.Transparent,
+                    FontSize = 14,
+                    TextPosition = new DataPoint(0.5, 0.5),
+                    TextHorizontalAlignment = OxyPlot.HorizontalAlignment.Center,
+                    TextVerticalAlignment = OxyPlot.VerticalAlignment.Middle
+                });
+
                 return;
+            }
 
             var months = monthBuckets.Keys.OrderBy(d => d).ToList();
             var monthLabels = months.Select(m => m.ToString("MMM yyyy")).ToList();

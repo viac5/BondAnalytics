@@ -2,7 +2,7 @@
 {
     public class SegmentInfo
     {
-        public string Name { get; set; }
+        public string Name { get; set; } = "";
         public decimal Value { get; set; }
         public DateTime Month { get; set; }
 

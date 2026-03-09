@@ -11,7 +11,7 @@ namespace App.ViewModels
         public List<string> AvailableCharts { get; } =
             new() { "Накопительная гистограмма купонов" };
 
-        public string SelectedChart { get; set; }
+        public string SelectedChart { get; set; } = "Накопительная гистограмма купонов";
 
         public ICommand BuildChartCommand { get; }
 
