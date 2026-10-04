@@ -55,7 +55,7 @@ public partial class OnboardingPage : ContentPage
     {
         try
         {
-            await Launcher.OpenAsync("https://www.tbank.ru/invest/settings/");
+            await Launcher.OpenAsync("https://www.tbank.ru/invest/portfolio/");
         }
         catch (Exception ex)
         {

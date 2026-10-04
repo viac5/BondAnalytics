@@ -1,6 +1,7 @@
 using BondAnalytics.Mobile.ViewModels;
 using Domain;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace BondAnalytics.Mobile.Services;
 
@@ -8,13 +9,18 @@ public sealed class MobileNavigationService
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ITokenProvider _tokenProvider;
+    private readonly ILogger<MobileNavigationService> _logger;
     private IServiceScope? _scope;
     private Window? _window;
 
-    public MobileNavigationService(IServiceScopeFactory scopeFactory, ITokenProvider tokenProvider)
+    public MobileNavigationService(
+        IServiceScopeFactory scopeFactory,
+        ITokenProvider tokenProvider,
+        ILogger<MobileNavigationService> logger)
     {
         _scopeFactory = scopeFactory;
         _tokenProvider = tokenProvider;
+        _logger = logger;
     }
 
     public async Task InitializeAsync(Window window)
@@ -40,6 +46,24 @@ public sealed class MobileNavigationService
         await shell.GoToAsync(showOnboarding ? "//onboarding" : "//main/portfolio/portfolioPage");
 
         if (!showOnboarding)
-            await nextScope.ServiceProvider.GetRequiredService<AppViewModel>().InitializeAsync();
+        {
+            var portfolio = nextScope.ServiceProvider.GetRequiredService<AppViewModel>();
+            await portfolio.InitializeAsync();
+            _ = PreloadPagesAsync(nextScope.ServiceProvider, portfolio.InitialRefreshTask);
+        }
+    }
+
+    private async Task PreloadPagesAsync(IServiceProvider services, Task initialRefreshTask)
+    {
+        try
+        {
+            await initialRefreshTask;
+            await services.GetRequiredService<AnalyticsViewModel>().LoadAsync();
+            await services.GetRequiredService<InvestmentPlanViewModel>().LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Could not preload analytics and investment plan pages");
+        }
     }
 }

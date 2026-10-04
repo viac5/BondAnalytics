@@ -27,4 +27,10 @@ public partial class AnalyticsPage : ContentPage
     }
 
     private async void OnLoadClicked(object? sender, EventArgs e) => await _viewModel.LoadAsync();
+
+    private async void OnChartPeriodChanged(object? sender, EventArgs e)
+    {
+        if (sender is Picker { SelectedIndex: >= 0 } picker)
+            await _viewModel.SetChartPeriodAsync(picker.SelectedIndex);
+    }
 }

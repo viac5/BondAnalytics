@@ -18,8 +18,11 @@ public sealed class PortfolioPositionViewModel : INotifyPropertyChanged
     public decimal Quantity => Item.Quantity;
     public decimal AveragePrice => Item.AveragePrice;
     public decimal CurrentPrice => _currentPrice;
-    public decimal PurchaseValue => AveragePrice * Quantity;
-    public decimal CurrentYield => Item.CurrentYield;
+    public decimal CurrentYield => Coupon > 0 && CouponsPerYear > 0
+        ? CouponYieldCalculator.CalculateAnnualYield(Coupon * CouponsPerYear, CurrentPrice)
+        : Item.CurrentYield;
+    public decimal ReinvestedYield =>
+        CouponYieldCalculator.CalculateReinvestedAnnualYield(CurrentYield, CouponsPerYear);
     public decimal Coupon => Item.Coupon;
     public int CouponsPerYear => Item.CouponsPerYear;
     public decimal TotalValue => Quantity * CurrentPrice;
@@ -40,26 +43,43 @@ public sealed class PortfolioPositionViewModel : INotifyPropertyChanged
         _currentPrice = item.CurrentPrice;
     }
 
-    public void UpdatePrice(decimal price)
+    public bool UpdatePrice(decimal price)
     {
+        if (_currentPrice == price)
+            return false;
+
         _currentPrice = price;
         OnPropertyChanged(nameof(CurrentPrice));
         OnPropertyChanged(nameof(TotalValue));
         OnPropertyChanged(nameof(FullValue));
+        OnPropertyChanged(nameof(CurrentYield));
+        OnPropertyChanged(nameof(ReinvestedYield));
         OnPropertyChanged(nameof(Profit));
         OnPropertyChanged(nameof(ProfitPercent));
         OnPropertyChanged(nameof(ProfitColor));
+        return true;
     }
 
     private void OnPropertyChanged([CallerMemberName] string? name = null) =>
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 }
 
-public sealed record ChartPoint(string Label, decimal Value, string? Detail = null, bool IsPercent = false)
+public sealed record ChartPoint(
+    string Label,
+    decimal Value,
+    string? Detail = null,
+    bool IsPercent = false,
+    string? Ticker = null,
+    decimal? Quantity = null,
+    decimal? InstrumentValue = null)
 {
     public string ValueText => IsPercent
         ? Value.ToString("P2", System.Globalization.CultureInfo.GetCultureInfo("ru-RU"))
         : Value.ToString("#,0 ₽", System.Globalization.CultureInfo.GetCultureInfo("ru-RU"));
 }
 
-public sealed record ChartSeries(string Name, Color Color, IReadOnlyList<decimal> Values);
+public sealed record ChartSeries(
+    string Name,
+    Color Color,
+    IReadOnlyList<decimal> Values,
+    IReadOnlyList<ChartPoint?>? Details = null);

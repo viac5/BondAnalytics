@@ -81,7 +81,21 @@
                     <VerticalStackLayout Spacing="8">
                         <Label Text="Стоимость портфеля" FontSize="16" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#233544, Dark=#EAF0F6}" />
                         <Label Text="{Binding CurrentValueSummary}" FontSize="12" TextColor="{AppThemeBinding Light=#667786, Dark=#91A2B3}" />
-                        <controls:PortfolioChartView Points="{Binding PortfolioHistory}" HeightRequest="220" />
+                        <Label Text="Период графика" FontSize="11" TextColor="{AppThemeBinding Light=#667786, Dark=#91A2B3}" />
+                        <Border Padding="10,2" Background="{AppThemeBinding Light=#F4F6F8, Dark=#1B293B}"
+                                Stroke="{AppThemeBinding Light=#D3DDE5, Dark=#34465C}" StrokeShape="RoundRectangle 12">
+                            <Picker ItemsSource="{Binding ChartPeriodOptions}"
+                                    SelectedIndex="{Binding SelectedChartPeriodIndex}"
+                                    SelectedIndexChanged="OnChartPeriodChanged"
+                                    TextColor="{AppThemeBinding Light=#233544, Dark=#E6EEF5}"
+                                    BackgroundColor="Transparent" />
+                        </Border>
+                        <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Always">
+                            <controls:PortfolioChartView Points="{Binding PortfolioHistory}"
+                                                         ShowAllPoints="True"
+                                                         WidthRequest="{Binding PortfolioHistoryChartWidth}"
+                                                         HeightRequest="220" />
+                        </ScrollView>
                     </VerticalStackLayout>
                 </Border>
                 <Label Text="Операции" FontSize="19" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#233544, Dark=#EAF0F6}" />
@@ -102,9 +116,11 @@
                                                TextColor="{AppThemeBinding Light=#14795B, Dark=#75D6B7}" HorizontalTextAlignment="Center"
                                                VerticalTextAlignment="Center" />
                                     </Border>
-                                    <VerticalStackLayout Grid.Column="1" Spacing="4">
+                                    <VerticalStackLayout Grid.Column="1" Spacing="3">
                                         <Label Text="{Binding InstrumentText}" FontSize="13"
                                                FontAttributes="Bold" TextColor="{AppThemeBinding Light=#233544, Dark=#E7EEF5}" />
+                                        <Label Text="{Binding TickerText}" IsVisible="{Binding HasTicker}"
+                                               FontSize="10" TextColor="{AppThemeBinding Light=#657789, Dark=#A2B1C0}" />
                                         <Label Text="{Binding TypeText}" FontSize="11" TextColor="{AppThemeBinding Light=#14795B, Dark=#78D5B8}" />
                                     </VerticalStackLayout>
                                     <Label Grid.Column="2" Text="{Binding AmountText}" FontSize="12"

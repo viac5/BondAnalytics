@@ -10,6 +10,7 @@ namespace Infrastructure
     {
         public DbSet<PortfolioSnapshotEntity> PortfolioSnapshots => Set<PortfolioSnapshotEntity>();
         public DbSet<InvestmentPlanEntity> InvestmentPlans => Set<InvestmentPlanEntity>();
+        public DbSet<CachedPortfolioEntity> CachedPortfolios => Set<CachedPortfolioEntity>();
 
         public PortfolioAnalyticsDbContext(DbContextOptions<PortfolioAnalyticsDbContext> options)
             : base(options)
@@ -39,6 +40,15 @@ namespace Infrastructure
                 entity.Property(plan => plan.PayloadJson).HasColumnName("payload_json");
                 entity.Property(plan => plan.UpdatedAtUnixMs).HasColumnName("updated_at_unix_ms");
             });
+
+            modelBuilder.Entity<CachedPortfolioEntity>(entity =>
+            {
+                entity.ToTable("cached_portfolio");
+                entity.HasKey(cache => cache.Id);
+                entity.Property(cache => cache.Id).HasColumnName("id");
+                entity.Property(cache => cache.PayloadJson).HasColumnName("payload_json");
+                entity.Property(cache => cache.CapturedAtUnixMs).HasColumnName("captured_at_unix_ms");
+            });
         }
     }
 
@@ -54,6 +64,13 @@ namespace Infrastructure
         public int PlanId { get; set; }
         public string PayloadJson { get; set; } = string.Empty;
         public long UpdatedAtUnixMs { get; set; }
+    }
+
+    public sealed class CachedPortfolioEntity
+    {
+        public int Id { get; set; }
+        public string PayloadJson { get; set; } = string.Empty;
+        public long CapturedAtUnixMs { get; set; }
     }
 
     public sealed class EfPortfolioRepository : IPortfolioHistoryRepository, IInvestmentPlanRepository
@@ -130,6 +147,47 @@ namespace Infrastructure
             return snapshots;
         }
 
+        public async Task SaveCachedPortfolioAsync(
+            CachedPortfolioData portfolio,
+            CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(portfolio);
+            await EnsureInitializedAsync(cancellationToken);
+            await using var context = await _contextFactory.CreateDbContextAsync(cancellationToken);
+            var cache = await context.CachedPortfolios.SingleOrDefaultAsync(item => item.Id == 1, cancellationToken);
+            if (cache is null)
+            {
+                cache = new CachedPortfolioEntity { Id = 1 };
+                context.CachedPortfolios.Add(cache);
+            }
+
+            cache.PayloadJson = await Task.Run(
+                () => JsonSerializer.Serialize(PortfolioCachePayload.From(portfolio.Portfolio)),
+                cancellationToken);
+            cache.CapturedAtUnixMs = portfolio.CapturedAt.ToUnixTimeMilliseconds();
+            await context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<CachedPortfolioData?> GetCachedPortfolioAsync(
+            CancellationToken cancellationToken = default)
+        {
+            await EnsureInitializedAsync(cancellationToken);
+            await using var context = await _contextFactory.CreateDbContextAsync(cancellationToken);
+            var cache = await context.CachedPortfolios
+                .AsNoTracking()
+                .SingleOrDefaultAsync(item => item.Id == 1, cancellationToken);
+            if (cache is null)
+                return null;
+
+            var payload = await Task.Run(
+                () => JsonSerializer.Deserialize<PortfolioCachePayload>(cache.PayloadJson)
+                    ?? throw new InvalidDataException("Сохранённый кэш портфеля имеет неверный формат."),
+                cancellationToken);
+            return new CachedPortfolioData(
+                payload.ToPortfolio(),
+                DateTimeOffset.FromUnixTimeMilliseconds(cache.CapturedAtUnixMs));
+        }
+
         public async Task<InvestmentPlan?> GetActivePlanAsync(CancellationToken cancellationToken = default)
         {
             await EnsureInitializedAsync(cancellationToken);
@@ -177,6 +235,9 @@ namespace Infrastructure
 
                 await using var context = await _contextFactory.CreateDbContextAsync(cancellationToken);
                 await context.Database.EnsureCreatedAsync(cancellationToken);
+                await context.Database.ExecuteSqlRawAsync(
+                    "CREATE TABLE IF NOT EXISTS cached_portfolio (id INTEGER NOT NULL PRIMARY KEY, payload_json TEXT NOT NULL, captured_at_unix_ms INTEGER NOT NULL);",
+                    cancellationToken);
                 _initialized = true;
             }
             finally
@@ -193,5 +254,42 @@ namespace Infrastructure
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "BondAnalytics",
             "portfolio-history.db");
+
+        private sealed record PortfolioCachePayload(decimal TotalValueRub, IReadOnlyList<PositionCachePayload> Positions)
+        {
+            public static PortfolioCachePayload From(PortfolioData portfolio) => new(
+                portfolio.TotalValueRub,
+                portfolio.Positions.Select(PositionCachePayload.From).ToList());
+
+            public PortfolioData ToPortfolio() => new(
+                Positions.Select(position => position.ToPortfolioItem()).ToList(),
+                TotalValueRub);
+        }
+
+        private sealed record PositionCachePayload(
+            string Ticker,
+            string Name,
+            string Uid,
+            string InstrumentType,
+            int Lot,
+            decimal Quantity,
+            decimal AveragePrice,
+            decimal CurrentPrice,
+            decimal AccruedInterestPerBond,
+            decimal Nominal,
+            decimal Coupon,
+            int CouponsPerYear,
+            decimal CurrentYield,
+            DateTime? NextCouponDate)
+        {
+            public static PositionCachePayload From(PortfolioItem item) => new(
+                item.Ticker, item.Name, item.Uid, item.InstrumentType, item.Lot, item.Quantity,
+                item.AveragePrice, item.CurrentPrice, item.AccruedInterestPerBond, item.Nominal,
+                item.Coupon, item.CouponsPerYear, item.CurrentYield, item.NextCouponDate);
+
+            public PortfolioItem ToPortfolioItem() => new(
+                Ticker, Name, Uid, InstrumentType, Lot, Quantity, AveragePrice, CurrentPrice,
+                AccruedInterestPerBond, Nominal, Coupon, CouponsPerYear, CurrentYield, NextCouponDate);
+        }
     }
 }

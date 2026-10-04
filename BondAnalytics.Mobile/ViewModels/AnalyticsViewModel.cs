@@ -13,10 +13,13 @@ public partial class AnalyticsViewModel : ObservableObject
     private readonly IPortfolioService _portfolioService;
     private readonly IPortfolioHistoryRepository _historyRepository;
     private readonly ILogger<AnalyticsViewModel> _logger;
+    private int _loadedChartPeriodIndex = -1;
+    private bool _chartReloadRequested;
 
     [ObservableProperty] private bool isBusy;
     [ObservableProperty] private DateTime fromDate = DateTime.Today.AddDays(-30);
     [ObservableProperty] private DateTime toDate = DateTime.Today;
+    [ObservableProperty] private int selectedChartPeriodIndex;
     [ObservableProperty] private string statusMessage = "Выберите период и загрузите аналитику";
     [ObservableProperty] private string depositSummary = "—";
     [ObservableProperty] private string withdrawalSummary = "—";
@@ -30,6 +33,9 @@ public partial class AnalyticsViewModel : ObservableObject
     public ObservableCollection<AnalyticsOperationViewModel> Operations { get; } = new();
     public ObservableCollection<ChartPoint> PortfolioHistory { get; } = new();
     public IReadOnlyList<string> Presets { get; } = ["30 дней", "90 дней", "С начала года", "Свой период"];
+    public IReadOnlyList<string> ChartPeriodOptions { get; } =
+        ["Период аналитики", "30 дней", "90 дней", "1 год"];
+    public double PortfolioHistoryChartWidth => Math.Max(320d, PortfolioHistory.Count * 18d);
 
     public AnalyticsViewModel(
         IPortfolioService portfolioService,
@@ -52,6 +58,23 @@ public partial class AnalyticsViewModel : ObservableObject
         };
     }
 
+    public async Task SetChartPeriodAsync(int index)
+    {
+        if (index < 0 || index >= ChartPeriodOptions.Count)
+            return;
+
+        SelectedChartPeriodIndex = index;
+        if (_loadedChartPeriodIndex == index && !IsBusy)
+            return;
+        if (IsBusy)
+        {
+            _chartReloadRequested = true;
+            return;
+        }
+
+        await LoadAsync();
+    }
+
     public async Task LoadAsync()
     {
         if (IsBusy)
@@ -69,11 +92,21 @@ public partial class AnalyticsViewModel : ObservableObject
         {
             var from = new DateTimeOffset(FromDate.Date);
             var to = new DateTimeOffset(ToDate.Date.AddDays(1)).AddTicks(-1);
-            var operationsTask = Task.Run(() =>
-                _portfolioService.GetOperationsAsync(DateTimeOffset.UnixEpoch, to, timeout.Token), timeout.Token);
-            var snapshotsTask = Task.Run(
-                () => _historyRepository.GetSnapshotsAsync(from, to, timeout.Token), timeout.Token);
-            await Task.WhenAll(operationsTask, snapshotsTask);
+            var chartPeriodIndex = SelectedChartPeriodIndex;
+            var chartFrom = chartPeriodIndex switch
+            {
+                1 => ToDate.Date.AddDays(-29),
+                2 => ToDate.Date.AddDays(-89),
+                3 => ToDate.Date.AddYears(-1).AddDays(1),
+                _ => FromDate.Date
+            };
+            var chartFromOffset = new DateTimeOffset(chartFrom);
+            var operationsTask = _portfolioService.GetOperationsAsync(DateTimeOffset.UnixEpoch, to, timeout.Token);
+            var snapshotsTask = _historyRepository.GetSnapshotsAsync(from, to, timeout.Token);
+            var chartSnapshotsTask = chartPeriodIndex == 0
+                ? snapshotsTask
+                : _historyRepository.GetSnapshotsAsync(chartFromOffset, to, timeout.Token);
+            await Task.WhenAll(operationsTask, snapshotsTask, chartSnapshotsTask);
 
             var allOperations = await operationsTask;
             var operationsInPeriod = allOperations
@@ -112,8 +145,20 @@ public partial class AnalyticsViewModel : ObservableObject
             }
 
             PortfolioHistory.Clear();
-            foreach (var snapshot in snapshots)
-                PortfolioHistory.Add(new ChartPoint(snapshot.CapturedAt.ToLocalTime().ToString("dd.MM"), snapshot.TotalValueRub));
+            var chartSnapshots = await chartSnapshotsTask;
+            var dailySnapshots = chartSnapshots
+                .GroupBy(snapshot => snapshot.CapturedAt.ToLocalTime().Date)
+                .Select(group => group.Last())
+                .ToList();
+            var dateFormat = chartFromOffset < new DateTimeOffset(ToDate.Date.AddMonths(-6))
+                ? "MMM yy"
+                : "dd.MM";
+            foreach (var snapshot in dailySnapshots)
+                PortfolioHistory.Add(new ChartPoint(
+                    snapshot.CapturedAt.ToLocalTime().ToString(dateFormat, CultureInfo.GetCultureInfo("ru-RU")),
+                    snapshot.TotalValueRub));
+            OnPropertyChanged(nameof(PortfolioHistoryChartWidth));
+            _loadedChartPeriodIndex = chartPeriodIndex;
 
             StatusMessage = $"{operationsInPeriod.Count} операций за выбранный период";
         }
@@ -128,6 +173,11 @@ public partial class AnalyticsViewModel : ObservableObject
         finally
         {
             IsBusy = false;
+            if (_chartReloadRequested)
+            {
+                _chartReloadRequested = false;
+                _ = LoadAsync();
+            }
         }
     }
 
@@ -144,9 +194,9 @@ public sealed class AnalyticsOperationViewModel
     public RealizedTradeResult? Realized { get; }
     public string DateText => Operation.Date.ToLocalTime().ToString("dd MMM yyyy, HH:mm", CultureInfo.GetCultureInfo("ru-RU"));
     public string TypeText => Operation.TypeName;
-    public string InstrumentText => string.IsNullOrWhiteSpace(Operation.InstrumentName)
-        ? Operation.Kind.ToString()
-        : Operation.InstrumentName;
+    public string InstrumentText { get; }
+    public string TickerText { get; }
+    public bool HasTicker => !string.IsNullOrWhiteSpace(TickerText);
     public string QuantityText => Operation.Quantity > 0 ? $"× {Operation.Quantity:N2}" : string.Empty;
     public string AmountText => $"{Operation.Amount:N2} {Operation.Currency}";
     public string ResultText => Realized?.ProfitIncludingCoupons is { } profit
@@ -187,5 +237,18 @@ public sealed class AnalyticsOperationViewModel
     {
         Operation = operation;
         Realized = realized;
+        var instrumentParts = operation.InstrumentName.Split(" · ", 2, StringSplitOptions.TrimEntries);
+        if (instrumentParts.Length == 2)
+        {
+            TickerText = instrumentParts[0];
+            InstrumentText = instrumentParts[1];
+        }
+        else
+        {
+            InstrumentText = string.IsNullOrWhiteSpace(operation.InstrumentName)
+                ? operation.Kind.ToString()
+                : operation.InstrumentName;
+            TickerText = string.Empty;
+        }
     }
 }

@@ -23,6 +23,30 @@ public sealed class PortfolioAnalyticsTests
     }
 
     [Fact]
+    public void AnnualCouponYieldUsesCurrentMarketPrice()
+    {
+        var yield = CouponYieldCalculator.CalculateAnnualYield(100m, 800m);
+
+        Assert.Equal(0.125m, yield);
+    }
+
+    [Fact]
+    public void ReinvestedYieldCompoundsEachSemiAnnualCoupon()
+    {
+        var yield = CouponYieldCalculator.CalculateReinvestedAnnualYield(0.10m, 2);
+
+        Assert.Equal(0.1025m, yield);
+    }
+
+    [Fact]
+    public void ReinvestedYieldHandlesZeroOrAnnualPaymentFrequency()
+    {
+        Assert.Equal(0.10m, CouponYieldCalculator.CalculateReinvestedAnnualYield(0.10m, 0));
+        Assert.Equal(0.10m, CouponYieldCalculator.CalculateReinvestedAnnualYield(0.10m, 1));
+        Assert.Equal(0m, CouponYieldCalculator.CalculateReinvestedAnnualYield(0m, 12));
+    }
+
+    [Fact]
     public void DepositIsRemovedFromProfitAndWeightedByDate()
     {
         var from = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
@@ -103,12 +127,28 @@ public sealed class PortfolioAnalyticsTests
             var plan = new InvestmentPlan { Name = "Цель на квартиру", TargetAmountRub = 15_000_000m };
             await repository.SaveActivePlanAsync(plan);
             var savedPlan = await repository.GetActivePlanAsync();
+            var sourcePortfolio = new PortfolioData(
+                new[]
+                {
+                    new PortfolioItem(
+                        "TEST", "Test bond", "test-uid", "bond", 1, 3m, 950m, 975m,
+                        12m, 1_000m, 25m, 2, 0.05m, new DateTime(2026, 7, 1))
+                },
+                2_961m);
+            var capturedAt = DateTimeOffset.UtcNow;
+            await repository.SaveCachedPortfolioAsync(new CachedPortfolioData(sourcePortfolio, capturedAt));
+            var cachedPortfolio = await repository.GetCachedPortfolioAsync();
 
             Assert.Equal(2, snapshots.Count);
             Assert.Equal(123_456.789123m, snapshots[0].TotalValueRub);
             Assert.Equal(234_567.891234m, snapshots[1].TotalValueRub);
             Assert.Equal("Цель на квартиру", savedPlan?.Name);
             Assert.Equal(15_000_000m, savedPlan?.TargetAmountRub);
+            Assert.NotNull(cachedPortfolio);
+            Assert.Equal(capturedAt.ToUnixTimeMilliseconds(), cachedPortfolio!.CapturedAt.ToUnixTimeMilliseconds());
+            Assert.Equal(2_961m, cachedPortfolio.Portfolio.TotalValueRub);
+            Assert.Equal("test-uid", Assert.Single(cachedPortfolio.Portfolio.Positions).Uid);
+            Assert.Equal(975m, cachedPortfolio.Portfolio.Positions[0].CurrentPrice);
         }
         finally
         {

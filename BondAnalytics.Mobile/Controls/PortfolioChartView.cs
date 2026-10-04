@@ -29,6 +29,27 @@ public sealed class PortfolioChartView : GraphicsView
         false,
         propertyChanged: (view, _, _) => ((PortfolioChartView)view).Invalidate());
 
+    public static readonly BindableProperty ShowAllAxisLabelsProperty = BindableProperty.Create(
+        nameof(ShowAllAxisLabels),
+        typeof(bool),
+        typeof(PortfolioChartView),
+        false,
+        propertyChanged: (view, _, _) => ((PortfolioChartView)view).Invalidate());
+
+    public static readonly BindableProperty IsInteractiveLineChartProperty = BindableProperty.Create(
+        nameof(IsInteractiveLineChart),
+        typeof(bool),
+        typeof(PortfolioChartView),
+        false,
+        propertyChanged: (view, _, _) => ((PortfolioChartView)view).Invalidate());
+
+    public static readonly BindableProperty ShowAllPointsProperty = BindableProperty.Create(
+        nameof(ShowAllPoints),
+        typeof(bool),
+        typeof(PortfolioChartView),
+        false,
+        propertyChanged: (view, _, _) => ((PortfolioChartView)view).Invalidate());
+
     public static readonly BindableProperty SeriesProperty = BindableProperty.Create(
         nameof(Series),
         typeof(IReadOnlyList<ChartSeries>),
@@ -43,6 +64,10 @@ public sealed class PortfolioChartView : GraphicsView
         propertyChanged: (view, _, _) => ((PortfolioChartView)view).Invalidate());
 
     private bool _themeSubscribed;
+    private readonly ChartDrawable _drawable;
+    private ChartPoint? _selectedDetail;
+    private PointF _selectedPoint;
+    private int _selectedLineIndex = -1;
 
     public bool IsAllocationChart
     {
@@ -54,6 +79,24 @@ public sealed class PortfolioChartView : GraphicsView
     {
         get => (bool)GetValue(IsStackedChartProperty);
         set => SetValue(IsStackedChartProperty, value);
+    }
+
+    public bool ShowAllAxisLabels
+    {
+        get => (bool)GetValue(ShowAllAxisLabelsProperty);
+        set => SetValue(ShowAllAxisLabelsProperty, value);
+    }
+
+    public bool IsInteractiveLineChart
+    {
+        get => (bool)GetValue(IsInteractiveLineChartProperty);
+        set => SetValue(IsInteractiveLineChartProperty, value);
+    }
+
+    public bool ShowAllPoints
+    {
+        get => (bool)GetValue(ShowAllPointsProperty);
+        set => SetValue(ShowAllPointsProperty, value);
     }
 
     public IReadOnlyList<ChartSeries> Series
@@ -76,8 +119,35 @@ public sealed class PortfolioChartView : GraphicsView
 
     public PortfolioChartView()
     {
-        Drawable = new ChartDrawable(this);
+        _drawable = new ChartDrawable(this);
+        Drawable = _drawable;
+        EndInteraction += OnEndInteraction;
         HeightRequest = 260;
+    }
+
+    private void OnEndInteraction(object? sender, TouchEventArgs e)
+    {
+        if (!e.IsInsideBounds || e.Touches.Length == 0)
+        {
+            _selectedDetail = null;
+            _selectedLineIndex = -1;
+            Invalidate();
+            return;
+        }
+
+        _selectedPoint = e.Touches[0];
+        var bounds = new RectF(0, 0, (float)Width, (float)Height);
+        if (IsInteractiveLineChart)
+        {
+            _selectedDetail = _drawable.FindLineDetailAt(
+                _selectedPoint, bounds, out _selectedPoint, out _selectedLineIndex);
+        }
+        else
+        {
+            _selectedLineIndex = -1;
+            _selectedDetail = _drawable.FindDetailAt(_selectedPoint, bounds);
+        }
+        Invalidate();
     }
 
     protected override void OnParentSet()
@@ -99,6 +169,8 @@ public sealed class PortfolioChartView : GraphicsView
 
     private void OnPointsChanged(INotifyCollectionChanged? oldPoints, INotifyCollectionChanged? newPoints)
     {
+        _selectedDetail = null;
+        _selectedLineIndex = -1;
         if (oldPoints is not null)
             oldPoints.CollectionChanged -= OnCollectionChanged;
         if (newPoints is not null)
@@ -106,7 +178,12 @@ public sealed class PortfolioChartView : GraphicsView
         Invalidate();
     }
 
-    private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) => Invalidate();
+    private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        _selectedDetail = null;
+        _selectedLineIndex = -1;
+        Invalidate();
+    }
 
     private sealed class ChartDrawable(PortfolioChartView view) : IDrawable
     {
@@ -125,7 +202,7 @@ public sealed class PortfolioChartView : GraphicsView
             var negative = Color.FromArgb(light ? "#B42318" : "#FF887D");
             var points = view.Series is { Count: > 0 } || view.IsStackedChart
                 ? view.Points?.ToList() ?? []
-                : view.Points?.TakeLast(18).ToList() ?? [];
+                : view.ShowAllPoints ? view.Points?.ToList() ?? [] : view.Points?.TakeLast(18).ToList() ?? [];
 
             if (points.Count == 0)
             {
@@ -139,22 +216,145 @@ public sealed class PortfolioChartView : GraphicsView
             if (view.IsAllocationChart)
             {
                 DrawAllocation(canvas, bounds, points, ink, light);
-                return;
             }
-
-            if (view.IsStackedChart)
+            else if (view.IsStackedChart)
             {
                 DrawStacked(canvas, bounds, points, view.Series ?? Array.Empty<ChartSeries>(), muted);
-                return;
+            }
+            else if (view.Series is { Count: > 0 })
+            {
+                DrawLines(canvas, bounds, points, view.Series, view.TargetValue, muted, view.ShowAllAxisLabels);
+                if (view.IsInteractiveLineChart && view._selectedLineIndex >= 0)
+                    DrawSelectedLinePoint(
+                        canvas, bounds, points, view.Series, view.TargetValue, view._selectedLineIndex, muted);
+            }
+            else
+            {
+                DrawBars(canvas, bounds, points, ink, muted, accent, negative, light);
+            }
+
+            if (!view.IsAllocationChart && view._selectedDetail is { } selected)
+                DrawSelection(canvas, bounds, selected, view._selectedPoint, view.IsStackedChart, light);
+        }
+
+        public ChartPoint? FindDetailAt(PointF touch, RectF bounds)
+        {
+            if (view.IsAllocationChart || view.Series is { Count: > 0 } && !view.IsStackedChart)
+                return null;
+
+            const float left = 8f;
+            if (view.IsStackedChart)
+            {
+                var points = view.Points?.ToList() ?? [];
+                var series = view.Series ?? Array.Empty<ChartSeries>();
+                const float top = 12f;
+                var bottom = bounds.Height - 33f;
+                var plotHeight = bottom - top;
+                if (points.Count == 0 || touch.Y < top || touch.Y > bottom)
+                    return null;
+
+                var slot = (bounds.Width - left * 2) / points.Count;
+                var pointIndex = (int)((touch.X - left) / slot);
+                if (pointIndex < 0 || pointIndex >= points.Count)
+                    return null;
+                var barWidth = Math.Clamp(slot * 0.58f, 6f, 28f);
+                var barX = left + slot * pointIndex + (slot - barWidth) / 2f;
+                if (touch.X < barX || touch.X > barX + barWidth)
+                    return null;
+
+                var maximum = Math.Max(1m, points.Max(point => point.Value));
+                var currentBottom = bottom;
+                foreach (var item in series)
+                {
+                    if (pointIndex >= item.Values.Count || item.Values[pointIndex] <= 0)
+                        continue;
+
+                    var segmentHeight = (float)(item.Values[pointIndex] / maximum * (decimal)(plotHeight - 4f));
+                    var segmentBottom = currentBottom;
+                    currentBottom -= Math.Max(1f, segmentHeight);
+                    if (touch.Y >= currentBottom && touch.Y <= segmentBottom)
+                        return pointIndex < (item.Details?.Count ?? 0)
+                            ? item.Details![pointIndex]
+                            : new ChartPoint(item.Name, item.Values[pointIndex]);
+                }
+                return null;
             }
 
             if (view.Series is { Count: > 0 })
+                return null;
+
+            var pointsToHitTest = view.ShowAllPoints
+                ? view.Points?.ToList() ?? []
+                : view.Points?.TakeLast(18).ToList() ?? [];
+            const float topForBars = 18f;
+            var chartBottom = bounds.Height - 35f;
+            var chartHeight = chartBottom - topForBars;
+            if (pointsToHitTest.Count == 0 || touch.Y < topForBars || touch.Y > chartBottom)
+                return null;
+
+            var barSlot = (bounds.Width - left * 2) / pointsToHitTest.Count;
+            var index = (int)((touch.X - left) / barSlot);
+            if (index < 0 || index >= pointsToHitTest.Count)
+                return null;
+            var width = Math.Clamp(barSlot * 0.5f, 5f, 24f);
+            var x = left + barSlot * index + (barSlot - width) / 2f;
+            if (touch.X < x || touch.X > x + width)
+                return null;
+
+            var max = pointsToHitTest.Max(point => Math.Abs((double)point.Value));
+            if (max <= 0)
+                return null;
+            var height = Math.Max(3f,
+                (float)(Math.Abs((double)pointsToHitTest[index].Value) / max * (chartHeight - 8f)));
+            return touch.Y >= chartBottom - height ? pointsToHitTest[index] : null;
+        }
+
+        public ChartPoint? FindLineDetailAt(
+            PointF touch,
+            RectF bounds,
+            out PointF anchor,
+            out int selectedIndex)
+        {
+            anchor = touch;
+            selectedIndex = -1;
+            var points = view.Points?.ToList() ?? [];
+            var series = view.Series ?? Array.Empty<ChartSeries>();
+            const float left = 12f;
+            const float top = 12f;
+            var bottom = bounds.Height - 34f;
+            if (points.Count == 0 || series.Count == 0 ||
+                touch.X < left || touch.X > bounds.Width - left ||
+                touch.Y < top || touch.Y > bottom)
+                return null;
+
+            var denominator = Math.Max(1, points.Count - 1);
+            selectedIndex = Math.Clamp(
+                (int)Math.Round((touch.X - left) / (bounds.Width - left * 2) * denominator),
+                0,
+                points.Count - 1);
+
+            var values = series.SelectMany(item => item.Values).ToList();
+            if (view.TargetValue is { } target)
+                values.Add(target);
+            var maximum = Math.Max(1m, values.DefaultIfEmpty(0m).Max());
+            var nearestDistance = float.MaxValue;
+            foreach (var item in series)
             {
-                DrawLines(canvas, bounds, points, view.Series, view.TargetValue, muted);
-                return;
+                if (selectedIndex >= item.Values.Count)
+                    continue;
+
+                var y = bottom - (float)(item.Values[selectedIndex] / maximum) * (bottom - top);
+                var distance = Math.Abs(touch.Y - y);
+                if (distance < nearestDistance)
+                {
+                    nearestDistance = distance;
+                    anchor = new PointF(
+                        left + (bounds.Width - left * 2) * selectedIndex / denominator,
+                        y);
+                }
             }
 
-            DrawBars(canvas, bounds, points, ink, muted, accent, negative, light);
+            return points[selectedIndex];
         }
 
         private static void DrawBars(
@@ -185,12 +385,16 @@ public sealed class PortfolioChartView : GraphicsView
                 var x = left + slot * i + (slot - barWidth) / 2;
                 canvas.FillColor = point.Value < 0 ? negative : accent;
                 canvas.FillRoundedRectangle(x, bottom - amount, barWidth, amount, barWidth / 2);
+                if (points.Count <= 18)
+                {
+                    canvas.FontColor = ink;
+                    canvas.FontSize = 9;
+                    canvas.DrawString(FormatBarLabel(point), x - (slot - barWidth) / 2,
+                        Math.Max(0, bottom - amount - 16), slot, 14,
+                        HorizontalAlignment.Center, VerticalAlignment.Center);
+                }
             }
 
-            canvas.FontColor = ink;
-            canvas.FontSize = 12;
-            canvas.DrawString(Format(points[^1]), left, 0, bounds.Width - left * 2, 20,
-                HorizontalAlignment.Right, VerticalAlignment.Center);
             DrawAxisLabels(canvas, points, left, bottom, bounds.Width, muted);
         }
 
@@ -229,13 +433,55 @@ public sealed class PortfolioChartView : GraphicsView
             DrawAxisLabels(canvas, points, left, bottom, bounds.Width, muted);
         }
 
+        private static void DrawSelectedLinePoint(
+            ICanvas canvas,
+            RectF bounds,
+            IReadOnlyList<ChartPoint> points,
+            IReadOnlyList<ChartSeries> series,
+            decimal? target,
+            int index,
+            Color muted)
+        {
+            if (index < 0 || index >= points.Count)
+                return;
+
+            const float left = 12f;
+            const float top = 12f;
+            var bottom = bounds.Height - 34f;
+            var denominator = Math.Max(1, points.Count - 1);
+            var x = left + (bounds.Width - left * 2) * index / denominator;
+            var values = series.SelectMany(item => item.Values).ToList();
+            if (target is { } targetValue)
+                values.Add(targetValue);
+            if (values.Count == 0)
+                return;
+
+            var maximum = Math.Max(1m, values.Max());
+            canvas.StrokeColor = muted.WithAlpha(0.7f);
+            canvas.StrokeSize = 1f;
+            canvas.DrawLine(x, top, x, bottom);
+            foreach (var item in series)
+            {
+                if (index >= item.Values.Count)
+                    continue;
+
+                var y = bottom - (float)(item.Values[index] / maximum) * (bottom - top);
+                canvas.FillColor = item.Color;
+                canvas.FillCircle(x - 4f, y - 4f, 8f);
+                canvas.StrokeColor = Color.FromArgb(ThemeManager.CurrentTheme == AppTheme.Light ? "#FFFFFF" : "#111E2C");
+                canvas.StrokeSize = 1.5f;
+                canvas.DrawCircle(x, y, 4f);
+            }
+        }
+
         private static void DrawLines(
             ICanvas canvas,
             RectF bounds,
             IReadOnlyList<ChartPoint> points,
             IReadOnlyList<ChartSeries> series,
             decimal? target,
-            Color muted)
+            Color muted,
+            bool showAllAxisLabels)
         {
             const float left = 12f;
             const float top = 12f;
@@ -278,7 +524,7 @@ public sealed class PortfolioChartView : GraphicsView
                 canvas.DrawPath(path);
             }
 
-            DrawAxisLabels(canvas, points, left, bottom, bounds.Width, muted);
+            DrawAxisLabels(canvas, points, left, bottom, bounds.Width, muted, showAllAxisLabels);
         }
 
         private static void DrawAllocation(
@@ -324,6 +570,52 @@ public sealed class PortfolioChartView : GraphicsView
                 HorizontalAlignment.Center, VerticalAlignment.Center);
         }
 
+        private static void DrawSelection(
+            ICanvas canvas,
+            RectF bounds,
+            ChartPoint point,
+            PointF anchor,
+            bool isCouponChart,
+            bool light)
+        {
+            const float horizontalPadding = 11f;
+            const float lineHeight = 17f;
+            var lines = new List<string> { point.Label };
+            if (!string.IsNullOrWhiteSpace(point.Ticker))
+                lines.Add(point.Ticker);
+            if (point.Quantity is { } quantity)
+                lines.Add($"Количество: {quantity:N2}");
+            if (point.InstrumentValue is { } value)
+                lines.Add($"Стоимость: {Format(value)} ₽");
+            if (isCouponChart)
+                lines.Add($"Купон за месяц: {Format(point.Value)} ₽");
+            if (!string.IsNullOrWhiteSpace(point.Detail))
+                lines.AddRange(point.Detail.Split('\n', StringSplitOptions.RemoveEmptyEntries));
+
+            var popupWidth = Math.Min(250f, bounds.Width - 16f);
+            var popupHeight = 16f + lineHeight * lines.Count;
+            var x = anchor.X + 14f + popupWidth > bounds.Width
+                ? anchor.X - popupWidth - 14f
+                : anchor.X + 14f;
+            x = Math.Clamp(x, 8f, bounds.Width - popupWidth - 8f);
+            var y = Math.Clamp(anchor.Y - popupHeight - 10f, 8f, bounds.Height - popupHeight - 8f);
+            canvas.FillColor = Color.FromArgb(light ? "#FFFFFF" : "#1B293B");
+            canvas.FillRoundedRectangle(x, y, popupWidth, popupHeight, 12f);
+            canvas.StrokeColor = Color.FromArgb(light ? "#D3DDE5" : "#42546A");
+            canvas.StrokeSize = 1f;
+            canvas.DrawRoundedRectangle(x, y, popupWidth, popupHeight, 12f);
+
+            var textColor = Color.FromArgb(light ? "#233544" : "#E6EEF5");
+            for (var index = 0; index < lines.Count; index++)
+            {
+                canvas.FontColor = index == 0 ? textColor : Color.FromArgb(light ? "#566979" : "#B9C7D4");
+                canvas.FontSize = index == 0 ? 11 : 10;
+                canvas.DrawString(lines[index], x + horizontalPadding, y + 7 + index * lineHeight,
+                    popupWidth - horizontalPadding * 2, lineHeight,
+                    HorizontalAlignment.Left, VerticalAlignment.Center);
+            }
+        }
+
         private static void DrawGrid(ICanvas canvas, float left, float top, float right, float height, Color muted)
         {
             canvas.StrokeColor = muted.WithAlpha(0.35f);
@@ -341,20 +633,40 @@ public sealed class PortfolioChartView : GraphicsView
             float left,
             float bottom,
             float width,
-            Color muted)
+            Color muted,
+            bool showAllLabels = false)
         {
             canvas.FontColor = muted;
             canvas.FontSize = 10;
-            var indices = new HashSet<int> { 0, points.Count / 2, points.Count - 1 };
-            foreach (var index in indices)
+            var labels = showAllLabels
+                ? points.Select((point, index) => new { Text = point.Label, Index = index }).ToList()
+                : points.Select((point, index) => (point.Label, index))
+                    .GroupBy(item => item.Label, StringComparer.CurrentCulture)
+                    .Select(group => new
+                    {
+                        Text = group.Key,
+                        Index = (group.First().index + group.Last().index) / 2
+                    })
+                    .ToList();
+            var selectedLabels = labels.Count <= 3
+                ? labels
+                : showAllLabels
+                    ? labels
+                    : [labels[0], labels[labels.Count / 2], labels[^1]];
+            var labelWidth = showAllLabels
+                ? Math.Max(58f, (width - left * 2) / Math.Max(1, points.Count - 1))
+                : 90f;
+            foreach (var label in selectedLabels)
             {
+                var index = label.Index;
                 if (index < 0 || index >= points.Count)
                     continue;
 
-                var x = points.Count == 1 ? left : left + (width - left * 2) * index / (points.Count - 1);
-                const float labelWidth = 90f;
-                var alignment = index == 0
-                    ? HorizontalAlignment.Left
+                var x = selectedLabels.Count == 1
+                    ? width / 2f
+                    : left + (width - left * 2) * index / (points.Count - 1);
+                var alignment = labels.Count == 1 || index == 0
+                    ? labels.Count == 1 ? HorizontalAlignment.Center : HorizontalAlignment.Left
                     : index == points.Count - 1
                         ? HorizontalAlignment.Right
                         : HorizontalAlignment.Center;
@@ -362,11 +674,27 @@ public sealed class PortfolioChartView : GraphicsView
                 {
                     HorizontalAlignment.Left => x,
                     HorizontalAlignment.Right => x - labelWidth,
-                    _ => x - labelWidth / 2f
+                    _ when alignment == HorizontalAlignment.Center => x - labelWidth / 2f,
+                    _ => x
                 };
-                canvas.DrawString(points[index].Label, labelX, bottom + 5, labelWidth, 18,
+                canvas.DrawString(label.Text, labelX, bottom + 5, labelWidth, 18,
                     alignment, VerticalAlignment.Center);
             }
+        }
+
+        private static string FormatBarLabel(ChartPoint point)
+        {
+            if (point.IsPercent)
+                return point.Value.ToString("P0", System.Globalization.CultureInfo.GetCultureInfo("ru-RU"));
+
+            var absoluteValue = Math.Abs(point.Value);
+            return absoluteValue switch
+            {
+                >= 1_000_000m => $"{point.Value / 1_000_000m:0.#}м",
+                >= 10_000m => $"{point.Value / 1_000m:0.#}к",
+                >= 1_000m => $"{point.Value / 1_000m:0.#}т",
+                _ => $"{point.Value:0}"
+            };
         }
 
         private static string Format(ChartPoint point) =>

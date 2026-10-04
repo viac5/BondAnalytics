@@ -11,7 +11,7 @@
                 <Label Text="BOND / ANALYTICS" FontSize="11" CharacterSpacing="2.5"
                        TextColor="{AppThemeBinding Light=#14795B, Dark=#82DEC0}" />
             </Border>
-            <Label Text="Ваш портфель.\nВ одном месте." FontSize="34" FontAttributes="Bold"
+            <Label Text="Ваш портфель.&#10;В одном месте." FontSize="34" FontAttributes="Bold"
                    TextColor="{AppThemeBinding Light=#17232F, Dark=#F0F5FA}" LineHeight="1.08" />
             <Label Text="Для подключения нужен токен T‑Invest с доступом только на чтение. Он останется на этом устройстве и будет храниться в системном защищённом хранилище."
                    FontSize="14" TextColor="{AppThemeBinding Light=#526474, Dark=#A5B4C3}" LineHeight="1.25" />
@@ -19,30 +19,37 @@
             <Border Padding="19" Background="{AppThemeBinding Light=#FFFFFF, Dark=#151F2D}" Stroke="{AppThemeBinding Light=#DCE4EB, Dark=#29394C}" StrokeShape="RoundRectangle 22">
                 <VerticalStackLayout Spacing="14">
                     <Label Text="Как выпустить токен" FontSize="18" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#233544, Dark=#EAF0F6}" />
-                    <Grid ColumnDefinitions="34,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="14">
+                    <Grid ColumnDefinitions="34,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="14">
                         <Border WidthRequest="28" HeightRequest="28" StrokeThickness="0"
                                 StrokeShape="RoundRectangle 14" Background="{AppThemeBinding Light=#D3EADF, Dark=#1C5A4B}">
                             <Label Text="1" TextColor="White" HorizontalTextAlignment="Center"
                                    VerticalTextAlignment="Center" FontAttributes="Bold" />
                         </Border>
-                        <Label Grid.Column="1" Text="Откройте приложение или личный кабинет T‑Invest и перейдите в настройки API."
+                        <Label Grid.Column="1" Text="Войдите в веб-версию T‑Инвестиции."
                                FontSize="13" TextColor="{AppThemeBinding Light=#485B6B, Dark=#BFCCD7}" VerticalTextAlignment="Center" />
                         <Border Grid.Row="1" WidthRequest="28" HeightRequest="28" StrokeThickness="0"
                                 StrokeShape="RoundRectangle 14" Background="{AppThemeBinding Light=#D3EADF, Dark=#1C5A4B}">
                             <Label Text="2" TextColor="White" HorizontalTextAlignment="Center"
                                    VerticalTextAlignment="Center" FontAttributes="Bold" />
                         </Border>
-                        <Label Grid.Row="1" Grid.Column="1" Text="Создайте токен для операций с портфелем, выбрав минимально необходимые права — чтение данных."
+                        <Label Grid.Row="1" Grid.Column="1" Text="Откройте «Настройки»."
                                FontSize="13" TextColor="{AppThemeBinding Light=#485B6B, Dark=#BFCCD7}" VerticalTextAlignment="Center" />
                         <Border Grid.Row="2" WidthRequest="28" HeightRequest="28" StrokeThickness="0"
                                 StrokeShape="RoundRectangle 14" Background="{AppThemeBinding Light=#D3EADF, Dark=#1C5A4B}">
                             <Label Text="3" TextColor="White" HorizontalTextAlignment="Center"
                                    VerticalTextAlignment="Center" FontAttributes="Bold" />
                         </Border>
-                        <Label Grid.Row="2" Grid.Column="1" Text="Скопируйте токен и вставьте ниже. После сохранения вводить его повторно не потребуется."
+                        <Label Grid.Row="2" Grid.Column="1" Text="Перейдите в раздел «Токены T‑Bank Invest API»."
+                               FontSize="13" TextColor="{AppThemeBinding Light=#485B6B, Dark=#BFCCD7}" VerticalTextAlignment="Center" />
+                        <Border Grid.Row="3" WidthRequest="28" HeightRequest="28" StrokeThickness="0"
+                                StrokeShape="RoundRectangle 14" Background="{AppThemeBinding Light=#D3EADF, Dark=#1C5A4B}">
+                            <Label Text="4" TextColor="White" HorizontalTextAlignment="Center"
+                                   VerticalTextAlignment="Center" FontAttributes="Bold" />
+                        </Border>
+                        <Label Grid.Row="3" Grid.Column="1" Text="Создайте токен с правами «Только просмотр»."
                                FontSize="13" TextColor="{AppThemeBinding Light=#485B6B, Dark=#BFCCD7}" VerticalTextAlignment="Center" />
                     </Grid>
-                    <Button Text="Открыть T‑Invest" Clicked="OnOpenInvestClicked"
+                    <Button Text="Открыть веб-версию T‑Инвестиции" Clicked="OnOpenInvestClicked"
                             BackgroundColor="{AppThemeBinding Light=#E8EDF2, Dark=#172638}" TextColor="{AppThemeBinding Light=#226F59, Dark=#A9DCCD}" CornerRadius="13" />
                 </VerticalStackLayout>
             </Border>

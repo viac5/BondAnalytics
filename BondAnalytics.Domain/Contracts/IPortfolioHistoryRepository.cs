@@ -12,5 +12,7 @@ namespace Domain
             DateTimeOffset from,
             DateTimeOffset to,
             CancellationToken cancellationToken = default);
+        Task SaveCachedPortfolioAsync(CachedPortfolioData portfolio, CancellationToken cancellationToken = default);
+        Task<CachedPortfolioData?> GetCachedPortfolioAsync(CancellationToken cancellationToken = default);
     }
 }

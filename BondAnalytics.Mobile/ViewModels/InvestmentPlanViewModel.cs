@@ -46,7 +46,7 @@ public partial class InvestmentPlanViewModel : ObservableObject
     public ObservableCollection<ChartPoint> ProjectionPoints { get; } = new();
     public ObservableCollection<ChartSeries> ProjectionSeries { get; } = new();
     public ObservableCollection<ContributionPeriodViewModel> ContributionPeriods { get; } = new();
-    public double ProjectionChartWidth => Math.Max(640d, ProjectionPoints.Count * 14d);
+    public double ProjectionChartWidth => Math.Max(640d, ProjectionPoints.Count * 66d);
     public decimal? TargetAmount => _plan?.TargetAmountRub > 0 ? _plan.TargetAmountRub : null;
 
     public InvestmentPlanViewModel(
@@ -71,8 +71,7 @@ public partial class InvestmentPlanViewModel : ObservableObject
         using var timeout = new CancellationTokenSource(RequestTimeout);
         try
         {
-            _plan = await Task.Run(
-                () => _planRepository.GetActivePlanAsync(timeout.Token), timeout.Token) ?? new InvestmentPlan
+            _plan = await _planRepository.GetActivePlanAsync(timeout.Token) ?? new InvestmentPlan
             {
                 InitialCapitalRub = _portfolio.TotalPortfolioValue
             };
@@ -135,8 +134,14 @@ public partial class InvestmentPlanViewModel : ObservableObject
             ProjectionPoints.Clear();
             ProjectionSeries.Clear();
             foreach (var point in evaluation.Points)
-                ProjectionPoints.Add(new ChartPoint(point.Date.ToString("MMM yyyy", CultureInfo.GetCultureInfo("ru-RU")),
-                    point.TotalWealthRub));
+            {
+                var dateLabel = point.Date.ToString("MMM yyyy", CultureInfo.GetCultureInfo("ru-RU"));
+                var tooltip = string.Join('\n',
+                    $"Стоимость портфеля: {FormatMoney(point.PortfolioValueRub)}",
+                    $"Капитал с купонами: {FormatMoney(point.TotalWealthRub)}",
+                    $"Пополнения: {FormatMoney(point.ContributionsRub)}");
+                ProjectionPoints.Add(new ChartPoint(dateLabel, point.TotalWealthRub, tooltip));
+            }
             ProjectionSeries.Add(new ChartSeries("Стоимость портфеля",
                 Color.FromArgb("#398B77"), evaluation.Points.Select(point => point.PortfolioValueRub).ToList()));
             ProjectionSeries.Add(new ChartSeries("Капитал с купонами",
@@ -203,8 +208,7 @@ public partial class InvestmentPlanViewModel : ObservableObject
         if (from > now)
             return Task.FromResult<IReadOnlyList<PortfolioOperation>>(Array.Empty<PortfolioOperation>());
 
-        return Task.Run(
-            () => _portfolioService.GetOperationsAsync(from, now, cancellationToken), cancellationToken);
+        return _portfolioService.GetOperationsAsync(from, now, cancellationToken);
     }
 
     private void CopyPlanToInputs(InvestmentPlan plan)

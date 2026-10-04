@@ -55,6 +55,8 @@
                             <controls:PortfolioChartView Points="{Binding ProjectionPoints}"
                                                          Series="{Binding ProjectionSeries}"
                                                          TargetValue="{Binding TargetAmount}"
+                                                         ShowAllAxisLabels="True"
+                                                         IsInteractiveLineChart="True"
                                                          WidthRequest="{Binding ProjectionChartWidth}"
                                                          HeightRequest="250" />
                         </ScrollView>
@@ -84,7 +86,9 @@
                         <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
                               ColumnSpacing="11" RowSpacing="8">
                             <VerticalStackLayout Spacing="4">
-                                <Label Text="Дата начала" FontSize="11" TextColor="{AppThemeBinding Light=#667786, Dark=#A2B1C0}" />
+                                <Label Text="Дата начала" FontSize="10.5" HeightRequest="30" MaxLines="2"
+                                       LineBreakMode="WordWrap" VerticalTextAlignment="Center"
+                                       TextColor="{AppThemeBinding Light=#667786, Dark=#A2B1C0}" />
                                 <Border Padding="10,2" Background="{AppThemeBinding Light=#F4F6F8, Dark=#1B293B}"
                                         Stroke="{AppThemeBinding Light=#D3DDE5, Dark=#34465C}" StrokeShape="RoundRectangle 12">
                                     <DatePicker Date="{Binding StartDate}" Format="dd.MM.yyyy"
@@ -92,7 +96,9 @@
                                 </Border>
                             </VerticalStackLayout>
                             <VerticalStackLayout Grid.Column="1" Spacing="4">
-                                <Label Text="Срок плана, лет" FontSize="11" TextColor="{AppThemeBinding Light=#667786, Dark=#A2B1C0}" />
+                                <Label Text="Срок плана, лет" FontSize="10.5" HeightRequest="30" MaxLines="2"
+                                       LineBreakMode="WordWrap" VerticalTextAlignment="Center"
+                                       TextColor="{AppThemeBinding Light=#667786, Dark=#A2B1C0}" />
                                 <Border Padding="10,2" Background="{AppThemeBinding Light=#F4F6F8, Dark=#1B293B}"
                                         Stroke="{AppThemeBinding Light=#D3DDE5, Dark=#34465C}" StrokeShape="RoundRectangle 12">
                                     <Entry FontSize="15" MinimumHeightRequest="44" Text="{Binding DurationYearsInput}"
@@ -102,7 +108,9 @@
                                 </Border>
                             </VerticalStackLayout>
                             <VerticalStackLayout Grid.Row="1" Spacing="4">
-                                <Label Text="Стартовый капитал, ₽" FontSize="11" TextColor="{AppThemeBinding Light=#667786, Dark=#A2B1C0}" />
+                                <Label Text="Стартовый капитал, ₽" FontSize="10.5" HeightRequest="30" MaxLines="2"
+                                       LineBreakMode="WordWrap" VerticalTextAlignment="Center"
+                                       TextColor="{AppThemeBinding Light=#667786, Dark=#A2B1C0}" />
                                 <Border Padding="10,2" Background="{AppThemeBinding Light=#F4F6F8, Dark=#1B293B}"
                                         Stroke="{AppThemeBinding Light=#D3DDE5, Dark=#34465C}" StrokeShape="RoundRectangle 12">
                                     <Entry FontSize="15" MinimumHeightRequest="44" Text="{Binding InitialCapitalInput}"
@@ -112,7 +120,9 @@
                                 </Border>
                             </VerticalStackLayout>
                             <VerticalStackLayout Grid.Row="1" Grid.Column="1" Spacing="4">
-                                <Label Text="Целевой капитал, ₽" FontSize="11" TextColor="{AppThemeBinding Light=#667786, Dark=#A2B1C0}" />
+                                <Label Text="Целевой капитал, ₽" FontSize="10.5" HeightRequest="30" MaxLines="2"
+                                       LineBreakMode="WordWrap" VerticalTextAlignment="Center"
+                                       TextColor="{AppThemeBinding Light=#667786, Dark=#A2B1C0}" />
                                 <Border Padding="10,2" Background="{AppThemeBinding Light=#F4F6F8, Dark=#1B293B}"
                                         Stroke="{AppThemeBinding Light=#D3DDE5, Dark=#34465C}" StrokeShape="RoundRectangle 12">
                                     <Entry FontSize="15" MinimumHeightRequest="44" Text="{Binding TargetAmountInput}"
@@ -122,7 +132,9 @@
                                 </Border>
                             </VerticalStackLayout>
                             <VerticalStackLayout Grid.Row="2" Spacing="4">
-                                <Label Text="Размер одного взноса, ₽" FontSize="11" TextColor="{AppThemeBinding Light=#667786, Dark=#A2B1C0}" />
+                                <Label Text="Размер одного взноса, ₽" FontSize="10.5" HeightRequest="30" MaxLines="2"
+                                       LineBreakMode="WordWrap" VerticalTextAlignment="Center"
+                                       TextColor="{AppThemeBinding Light=#667786, Dark=#A2B1C0}" />
                                 <Border Padding="10,2" Background="{AppThemeBinding Light=#F4F6F8, Dark=#1B293B}"
                                         Stroke="{AppThemeBinding Light=#D3DDE5, Dark=#34465C}" StrokeShape="RoundRectangle 12">
                                     <Entry FontSize="15" MinimumHeightRequest="44" Text="{Binding ContributionAmountInput}"
@@ -132,7 +144,9 @@
                                 </Border>
                             </VerticalStackLayout>
                             <VerticalStackLayout Grid.Row="2" Grid.Column="1" Spacing="4">
-                                <Label Text="Частота взносов" FontSize="11" TextColor="{AppThemeBinding Light=#667786, Dark=#A2B1C0}" />
+                                <Label Text="Частота взносов" FontSize="10.5" HeightRequest="30" MaxLines="2"
+                                       LineBreakMode="WordWrap" VerticalTextAlignment="Center"
+                                       TextColor="{AppThemeBinding Light=#667786, Dark=#A2B1C0}" />
                                 <Border Padding="10,2" Background="{AppThemeBinding Light=#F4F6F8, Dark=#1B293B}"
                                         Stroke="{AppThemeBinding Light=#D3DDE5, Dark=#34465C}" StrokeShape="RoundRectangle 12">
                                     <Picker ItemsSource="{Binding FrequencyOptions}" SelectedIndex="{Binding FrequencyIndex}"
@@ -141,7 +155,9 @@
                                 </Border>
                             </VerticalStackLayout>
                             <VerticalStackLayout Grid.Row="3" Spacing="4">
-                                <Label Text="День взноса месяца" FontSize="11" TextColor="{AppThemeBinding Light=#667786, Dark=#A2B1C0}" />
+                                <Label Text="День взноса месяца" FontSize="10.5" HeightRequest="30" MaxLines="2"
+                                       LineBreakMode="WordWrap" VerticalTextAlignment="Center"
+                                       TextColor="{AppThemeBinding Light=#667786, Dark=#A2B1C0}" />
                                 <Border Padding="10,2" Background="{AppThemeBinding Light=#F4F6F8, Dark=#1B293B}"
                                         Stroke="{AppThemeBinding Light=#D3DDE5, Dark=#34465C}" StrokeShape="RoundRectangle 12">
                                     <Entry FontSize="15" MinimumHeightRequest="44" Text="{Binding ContributionDayInput}"
@@ -151,7 +167,9 @@
                                 </Border>
                             </VerticalStackLayout>
                             <VerticalStackLayout Grid.Row="3" Grid.Column="1" Spacing="4">
-                                <Label Text="Ежегодное увеличение взноса, %" FontSize="11" TextColor="{AppThemeBinding Light=#667786, Dark=#A2B1C0}" />
+                                <Label Text="Рост взносов в год, %" FontSize="10.5" HeightRequest="30" MaxLines="2"
+                                       LineBreakMode="WordWrap" VerticalTextAlignment="Center"
+                                       TextColor="{AppThemeBinding Light=#667786, Dark=#A2B1C0}" />
                                 <Border Padding="10,2" Background="{AppThemeBinding Light=#F4F6F8, Dark=#1B293B}"
                                         Stroke="{AppThemeBinding Light=#D3DDE5, Dark=#34465C}" StrokeShape="RoundRectangle 12">
                                     <Entry FontSize="15" MinimumHeightRequest="44" Text="{Binding ContributionIncreaseInput}"
@@ -161,7 +179,9 @@
                                 </Border>
                             </VerticalStackLayout>
                             <VerticalStackLayout Grid.Row="4" Spacing="4">
-                                <Label Text="Рост цены бумаг, % в год" FontSize="11" TextColor="{AppThemeBinding Light=#667786, Dark=#A2B1C0}" />
+                                <Label Text="Рост цены бумаг, % в год" FontSize="10.5" HeightRequest="30" MaxLines="2"
+                                       LineBreakMode="WordWrap" VerticalTextAlignment="Center"
+                                       TextColor="{AppThemeBinding Light=#667786, Dark=#A2B1C0}" />
                                 <Border Padding="10,2" Background="{AppThemeBinding Light=#F4F6F8, Dark=#1B293B}"
                                         Stroke="{AppThemeBinding Light=#D3DDE5, Dark=#34465C}" StrokeShape="RoundRectangle 12">
                                     <Entry FontSize="15" MinimumHeightRequest="44" Text="{Binding PriceGrowthInput}"
@@ -171,7 +191,9 @@
                                 </Border>
                             </VerticalStackLayout>
                             <VerticalStackLayout Grid.Row="4" Grid.Column="1" Spacing="4">
-                                <Label Text="Купонная доходность, % в год" FontSize="11" TextColor="{AppThemeBinding Light=#667786, Dark=#A2B1C0}" />
+                                <Label Text="Купонная доходность, % в год" FontSize="10.5" HeightRequest="30" MaxLines="2"
+                                       LineBreakMode="WordWrap" VerticalTextAlignment="Center"
+                                       TextColor="{AppThemeBinding Light=#667786, Dark=#A2B1C0}" />
                                 <Border Padding="10,2" Background="{AppThemeBinding Light=#F4F6F8, Dark=#1B293B}"
                                         Stroke="{AppThemeBinding Light=#D3DDE5, Dark=#34465C}" StrokeShape="RoundRectangle 12">
                                     <Entry FontSize="15" MinimumHeightRequest="44" Text="{Binding CouponYieldInput}"
@@ -181,7 +203,9 @@
                                 </Border>
                             </VerticalStackLayout>
                             <VerticalStackLayout Grid.Row="5" Spacing="4">
-                                <Label Text="Налог на купоны, %" FontSize="11" TextColor="{AppThemeBinding Light=#667786, Dark=#A2B1C0}" />
+                                <Label Text="Налог на купоны, %" FontSize="10.5" HeightRequest="30" MaxLines="2"
+                                       LineBreakMode="WordWrap" VerticalTextAlignment="Center"
+                                       TextColor="{AppThemeBinding Light=#667786, Dark=#A2B1C0}" />
                                 <Border Padding="10,2" Background="{AppThemeBinding Light=#F4F6F8, Dark=#1B293B}"
                                         Stroke="{AppThemeBinding Light=#D3DDE5, Dark=#34465C}" StrokeShape="RoundRectangle 12">
                                     <Entry FontSize="15" MinimumHeightRequest="44" Text="{Binding CouponTaxInput}"
@@ -191,7 +215,9 @@
                                 </Border>
                             </VerticalStackLayout>
                             <VerticalStackLayout Grid.Row="5" Grid.Column="1" Spacing="4">
-                                <Label Text="Комиссия, % в год" FontSize="11" TextColor="{AppThemeBinding Light=#667786, Dark=#A2B1C0}" />
+                                <Label Text="Комиссия, % в год" FontSize="10.5" HeightRequest="30" MaxLines="2"
+                                       LineBreakMode="WordWrap" VerticalTextAlignment="Center"
+                                       TextColor="{AppThemeBinding Light=#667786, Dark=#A2B1C0}" />
                                 <Border Padding="10,2" Background="{AppThemeBinding Light=#F4F6F8, Dark=#1B293B}"
                                         Stroke="{AppThemeBinding Light=#D3DDE5, Dark=#34465C}" StrokeShape="RoundRectangle 12">
                                     <Entry FontSize="15" MinimumHeightRequest="44" Text="{Binding AnnualFeeInput}"
@@ -201,7 +227,9 @@
                                 </Border>
                             </VerticalStackLayout>
                             <VerticalStackLayout Grid.Row="6" Spacing="4">
-                                <Label Text="Инфляция, % в год" FontSize="11" TextColor="{AppThemeBinding Light=#667786, Dark=#A2B1C0}" />
+                                <Label Text="Инфляция, % в год" FontSize="10.5" HeightRequest="30" MaxLines="2"
+                                       LineBreakMode="WordWrap" VerticalTextAlignment="Center"
+                                       TextColor="{AppThemeBinding Light=#667786, Dark=#A2B1C0}" />
                                 <Border Padding="10,2" Background="{AppThemeBinding Light=#F4F6F8, Dark=#1B293B}"
                                         Stroke="{AppThemeBinding Light=#D3DDE5, Dark=#34465C}" StrokeShape="RoundRectangle 12">
                                     <Entry FontSize="15" MinimumHeightRequest="44" Text="{Binding InflationInput}"
