@@ -135,7 +135,7 @@ public partial class InvestmentPlanViewModel : ObservableObject
             ProjectionPoints.Clear();
             ProjectionSeries.Clear();
             foreach (var point in evaluation.Points)
-                ProjectionPoints.Add(new ChartPoint(point.Date.ToString("MMM yy", CultureInfo.GetCultureInfo("ru-RU")),
+                ProjectionPoints.Add(new ChartPoint(point.Date.ToString("MMM yyyy", CultureInfo.GetCultureInfo("ru-RU")),
                     point.TotalWealthRub));
             ProjectionSeries.Add(new ChartSeries("Стоимость портфеля",
                 Color.FromArgb("#398B77"), evaluation.Points.Select(point => point.PortfolioValueRub).ToList()));

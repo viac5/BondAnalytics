@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:controls="clr-namespace:BondAnalytics.Mobile.Controls"
              x:Class="BondAnalytics.Mobile.Pages.ChartsPage"
-             BackgroundColor="{AppThemeBinding Light=#F4F6F8, Dark=#07111F}">
+             BackgroundColor="{AppThemeBinding Light=#F4F6F8, Dark=#0A1421}">
     <Grid RowDefinitions="Auto,*">
         <VerticalStackLayout Padding="22,18,22,12" Spacing="4">
             <Label Text="РЫНКИ И ДОХОДНОСТЬ" FontSize="10" CharacterSpacing="2.4" TextColor="{AppThemeBinding Light=#14795B, Dark=#75D6B7}" />
@@ -11,12 +11,16 @@
         </VerticalStackLayout>
         <ScrollView Grid.Row="1">
             <VerticalStackLayout Padding="18,4,18,26" Spacing="15">
-                <Border Padding="17" Background="{AppThemeBinding Light=#FFFFFF, Dark=#111E2C}" Stroke="{AppThemeBinding Light=#DCE4EB, Dark=#1D2D3D}" StrokeShape="RoundRectangle 22">
+                <Border Padding="17" Background="{AppThemeBinding Light=#FFFFFF, Dark=#151F2D}" Stroke="{AppThemeBinding Light=#DCE4EB, Dark=#29394C}" StrokeShape="RoundRectangle 22">
                     <VerticalStackLayout Spacing="12">
                         <Label Text="ВЫБЕРИТЕ ПОКАЗАТЕЛЬ" FontSize="10" CharacterSpacing="1.6"
-                               TextColor="{AppThemeBinding Light=#667786, Dark=#91A2B3}" />
-                        <Picker ItemsSource="{Binding ChartLabelsList}" SelectedIndex="{Binding SelectedChartIndex}"
-                                TextColor="{AppThemeBinding Light=#233544, Dark=#E6EEF5}" BackgroundColor="{AppThemeBinding Light=#E8EDF2, Dark=#172638}" />
+                               TextColor="{AppThemeBinding Light=#667786, Dark=#A2B1C0}" />
+                        <Border Padding="10,2" Background="{AppThemeBinding Light=#F4F6F8, Dark=#1B293B}"
+                                Stroke="{AppThemeBinding Light=#D3DDE5, Dark=#34465C}" StrokeShape="RoundRectangle 14">
+                            <Picker ItemsSource="{Binding ChartLabelsList}" SelectedIndex="{Binding SelectedChartIndex}"
+                                    TextColor="{AppThemeBinding Light=#233544, Dark=#E6EEF5}"
+                                    BackgroundColor="Transparent" />
+                        </Border>
                         <controls:PortfolioChartView Points="{Binding ChartPoints}"
                                                      IsAllocationChart="{Binding IsAllocationChart}"
                                                      IsStackedChart="{Binding IsStackedChart}"
@@ -32,19 +36,19 @@
                                 <Ellipse WidthRequest="9" HeightRequest="9" Fill="{Binding Color}"
                                          VerticalOptions="Center" />
                                 <Label Grid.Column="1" Text="{Binding Name}" FontSize="11"
-                                       TextColor="{AppThemeBinding Light=#667786, Dark=#91A2B3}" LineBreakMode="TailTruncation"
+                                       TextColor="{AppThemeBinding Light=#667786, Dark=#A2B1C0}" LineBreakMode="TailTruncation"
                                        VerticalTextAlignment="Center" />
                             </Grid>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>
                 <Label Text="Для графиков стоимости и прибыли используются актуальные котировки. Прогноз купонов построен по ближайшим датам выплат."
-                       FontSize="12" TextColor="{AppThemeBinding Light=#657789, Dark=#8294A8}" LineBreakMode="WordWrap" />
+                       FontSize="12" TextColor="{AppThemeBinding Light=#657789, Dark=#A2B1C0}" LineBreakMode="WordWrap" />
                 <CollectionView ItemsSource="{Binding ChartPoints}" SelectionMode="None">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
                             <Grid Padding="12,10" ColumnDefinitions="*,Auto">
-                                <Label Text="{Binding Label}" TextColor="{AppThemeBinding Light=#485B6B, Dark=#BCC9D5}" FontSize="12" />
+                                <Label Text="{Binding Label}" TextColor="{AppThemeBinding Light=#485B6B, Dark=#C8D3DE}" FontSize="12" />
                                 <Label Grid.Column="1" Text="{Binding ValueText}"
                                        TextColor="{AppThemeBinding Light=#14795B, Dark=#89DEC1}" FontSize="12" FontAttributes="Bold" />
                             </Grid>

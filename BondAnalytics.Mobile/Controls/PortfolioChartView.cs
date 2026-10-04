@@ -345,14 +345,27 @@ public sealed class PortfolioChartView : GraphicsView
         {
             canvas.FontColor = muted;
             canvas.FontSize = 10;
-            foreach (var index in new HashSet<int> { 0, points.Count / 2, points.Count - 1 })
+            var indices = new HashSet<int> { 0, points.Count / 2, points.Count - 1 };
+            foreach (var index in indices)
             {
                 if (index < 0 || index >= points.Count)
                     continue;
 
                 var x = points.Count == 1 ? left : left + (width - left * 2) * index / (points.Count - 1);
-                canvas.DrawString(points[index].Label, x - 30, bottom + 5, 60, 18,
-                    HorizontalAlignment.Center, VerticalAlignment.Center);
+                const float labelWidth = 90f;
+                var alignment = index == 0
+                    ? HorizontalAlignment.Left
+                    : index == points.Count - 1
+                        ? HorizontalAlignment.Right
+                        : HorizontalAlignment.Center;
+                var labelX = alignment switch
+                {
+                    HorizontalAlignment.Left => x,
+                    HorizontalAlignment.Right => x - labelWidth,
+                    _ => x - labelWidth / 2f
+                };
+                canvas.DrawString(points[index].Label, labelX, bottom + 5, labelWidth, 18,
+                    alignment, VerticalAlignment.Center);
             }
         }
 

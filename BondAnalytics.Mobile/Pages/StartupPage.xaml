@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="BondAnalytics.Mobile.Pages.StartupPage"
-             BackgroundColor="{AppThemeBinding Light=#F4F6F8, Dark=#07111F}">
+             BackgroundColor="{AppThemeBinding Light=#F4F6F8, Dark=#0A1421}">
     <Grid Padding="32" RowDefinitions="*,Auto,*">
         <VerticalStackLayout Grid.Row="1" Spacing="18" HorizontalOptions="Center">
             <Label Text="BOND / ANALYTICS" FontSize="13" CharacterSpacing="3"

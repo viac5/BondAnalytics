@@ -18,6 +18,7 @@ public sealed class PortfolioPositionViewModel : INotifyPropertyChanged
     public decimal Quantity => Item.Quantity;
     public decimal AveragePrice => Item.AveragePrice;
     public decimal CurrentPrice => _currentPrice;
+    public decimal PurchaseValue => AveragePrice * Quantity;
     public decimal CurrentYield => Item.CurrentYield;
     public decimal Coupon => Item.Coupon;
     public int CouponsPerYear => Item.CouponsPerYear;

@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="BondAnalytics.Mobile.Pages.OnboardingPage"
              Shell.NavBarIsVisible="False"
-             BackgroundColor="{AppThemeBinding Light=#F4F6F8, Dark=#07111F}">
+             BackgroundColor="{AppThemeBinding Light=#F4F6F8, Dark=#0A1421}">
     <ScrollView>
         <VerticalStackLayout Padding="22,32,22,34" Spacing="18">
             <Border Padding="20,15" HorizontalOptions="Start" Background="{AppThemeBinding Light=#E5F2EC, Dark=#102824}"
@@ -16,7 +16,7 @@
             <Label Text="Для подключения нужен токен T‑Invest с доступом только на чтение. Он останется на этом устройстве и будет храниться в системном защищённом хранилище."
                    FontSize="14" TextColor="{AppThemeBinding Light=#526474, Dark=#A5B4C3}" LineHeight="1.25" />
 
-            <Border Padding="19" Background="{AppThemeBinding Light=#FFFFFF, Dark=#111E2C}" Stroke="{AppThemeBinding Light=#DCE4EB, Dark=#1D2D3D}" StrokeShape="RoundRectangle 22">
+            <Border Padding="19" Background="{AppThemeBinding Light=#FFFFFF, Dark=#151F2D}" Stroke="{AppThemeBinding Light=#DCE4EB, Dark=#29394C}" StrokeShape="RoundRectangle 22">
                 <VerticalStackLayout Spacing="14">
                     <Label Text="Как выпустить токен" FontSize="18" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#233544, Dark=#EAF0F6}" />
                     <Grid ColumnDefinitions="34,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="14">
@@ -47,13 +47,17 @@
                 </VerticalStackLayout>
             </Border>
 
-            <Border Padding="18" Background="{AppThemeBinding Light=#FFFFFF, Dark=#111E2C}" Stroke="{AppThemeBinding Light=#DCE4EB, Dark=#1D2D3D}" StrokeShape="RoundRectangle 22">
+            <Border Padding="18" Background="{AppThemeBinding Light=#FFFFFF, Dark=#151F2D}" Stroke="{AppThemeBinding Light=#DCE4EB, Dark=#29394C}" StrokeShape="RoundRectangle 22">
                 <VerticalStackLayout Spacing="11">
                     <Label Text="Защищённое подключение" FontSize="17" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#233544, Dark=#EAF0F6}" />
-                    <Entry x:Name="TokenEntry" Placeholder="Вставьте токен T‑Invest"
-                           IsPassword="True" ClearButtonVisibility="WhileEditing"
-                           TextColor="{AppThemeBinding Light=#233544, Dark=#EEF4F8}" PlaceholderColor="{AppThemeBinding Light=#687786, Dark=#708399}"
-                           BackgroundColor="{AppThemeBinding Light=#E8EDF2, Dark=#172638}" />
+                    <Border Padding="10,2" Background="{AppThemeBinding Light=#F4F6F8, Dark=#1B293B}"
+                            Stroke="{AppThemeBinding Light=#D3DDE5, Dark=#34465C}" StrokeShape="RoundRectangle 12">
+                        <Entry x:Name="TokenEntry" Placeholder="Вставьте токен T‑Invest"
+                               IsPassword="True" ClearButtonVisibility="WhileEditing"
+                               TextColor="{AppThemeBinding Light=#233544, Dark=#EEF4F8}"
+                               PlaceholderColor="{AppThemeBinding Light=#73808C, Dark=#91A1B3}"
+                               BackgroundColor="Transparent" />
+                    </Border>
                     <Button x:Name="SaveButton" Text="Сохранить токен и продолжить"
                             Clicked="OnSaveClicked" BackgroundColor="{AppThemeBinding Light=#D3EADF, Dark=#1C5A4B}"
                             TextColor="{AppThemeBinding Light=#135840, Dark=#EAF8F3}" CornerRadius="14" />

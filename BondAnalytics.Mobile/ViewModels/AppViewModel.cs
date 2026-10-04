@@ -225,9 +225,11 @@ public partial class AppViewModel : ObservableObject, IDisposable
                 .Select(ticker => new
                 {
                     Ticker = ticker,
-                    Total = coupons.Values.Sum(month => month.GetValueOrDefault(ticker))
+                    Total = coupons.Values.Sum(month => month.GetValueOrDefault(ticker)),
+                    CouponsPerYear = Positions.First(position => position.Ticker == ticker).CouponsPerYear
                 })
-                .OrderByDescending(item => item.Total)
+                .OrderByDescending(item => item.CouponsPerYear)
+                .ThenBy(item => item.Total)
                 .ToList();
             var displayedTickers = tickers.Take(10).Select(item => item.Ticker).ToHashSet(StringComparer.Ordinal);
             var seriesTickers = tickers.Take(10).Select(item => item.Ticker).ToList();
@@ -254,7 +256,7 @@ public partial class AppViewModel : ObservableObject, IDisposable
             {
                 var month = couponMonths[index];
                 ChartPoints.Add(new ChartPoint(
-                    month.Key.ToString("MMM", CultureInfo.GetCultureInfo("ru-RU")),
+                    month.Key.ToString("MMM yyyy", CultureInfo.GetCultureInfo("ru-RU")),
                     ChartSeries.Sum(series => series.Values[index])));
             }
             return;
@@ -268,7 +270,7 @@ public partial class AppViewModel : ObservableObject, IDisposable
         }
 
         var values = Positions.Select(position => new ChartPoint(
-                position.Ticker,
+                position.Name,
                 SelectedChartIndex switch
                 {
                     1 => position.TotalValue,

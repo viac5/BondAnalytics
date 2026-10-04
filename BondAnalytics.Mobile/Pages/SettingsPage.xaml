@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="BondAnalytics.Mobile.Pages.SettingsPage"
-             BackgroundColor="{AppThemeBinding Light=#F4F6F8, Dark=#07111F}">
+             BackgroundColor="{AppThemeBinding Light=#F4F6F8, Dark=#0A1421}">
     <Grid RowDefinitions="Auto,*">
         <VerticalStackLayout Padding="22,18,22,12" Spacing="4">
             <Label Text="БЕЗОПАСНОСТЬ" FontSize="10" CharacterSpacing="2.4" TextColor="{AppThemeBinding Light=#14795B, Dark=#75D6B7}" />
@@ -10,7 +10,7 @@
         </VerticalStackLayout>
         <ScrollView Grid.Row="1">
             <VerticalStackLayout Padding="18,4,18,28" Spacing="14">
-                <Border Padding="18" Background="{AppThemeBinding Light=#FFFFFF, Dark=#111E2C}" Stroke="{AppThemeBinding Light=#DCE4EB, Dark=#1D2D3D}" StrokeShape="RoundRectangle 21">
+                <Border Padding="18" Background="{AppThemeBinding Light=#FFFFFF, Dark=#151F2D}" Stroke="{AppThemeBinding Light=#DCE4EB, Dark=#29394C}" StrokeShape="RoundRectangle 21">
                     <VerticalStackLayout Spacing="11">
                         <Label Text="Подключение T‑Invest" FontSize="17" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#233544, Dark=#EAF0F6}" />
                         <Grid ColumnDefinitions="12,*" ColumnSpacing="10">
@@ -25,7 +25,7 @@
                                 BackgroundColor="{AppThemeBinding Light=#F6E4E3, Dark=#3A2528}" TextColor="{AppThemeBinding Light=#B42318, Dark=#FFB4A9}" CornerRadius="13" />
                     </VerticalStackLayout>
                 </Border>
-                <Border Padding="18" Background="{AppThemeBinding Light=#FFFFFF, Dark=#111E2C}" Stroke="{AppThemeBinding Light=#DCE4EB, Dark=#1D2D3D}" StrokeShape="RoundRectangle 21">
+                <Border Padding="18" Background="{AppThemeBinding Light=#FFFFFF, Dark=#151F2D}" Stroke="{AppThemeBinding Light=#DCE4EB, Dark=#29394C}" StrokeShape="RoundRectangle 21">
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
                         <VerticalStackLayout Spacing="4" VerticalOptions="Center">
                             <Label Text="Светлая тема" FontSize="16" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#233544, Dark=#EAF0F6}" />
@@ -36,7 +36,7 @@
                                 Toggled="OnThemeToggled" OnColor="{AppThemeBinding Light=#14795B, Dark=#70D7B8}" />
                     </Grid>
                 </Border>
-                <Border Padding="18" Background="{AppThemeBinding Light=#FFFFFF, Dark=#111E2C}" Stroke="{AppThemeBinding Light=#DCE4EB, Dark=#1D2D3D}" StrokeShape="RoundRectangle 21">
+                <Border Padding="18" Background="{AppThemeBinding Light=#FFFFFF, Dark=#151F2D}" Stroke="{AppThemeBinding Light=#DCE4EB, Dark=#29394C}" StrokeShape="RoundRectangle 21">
                     <VerticalStackLayout Spacing="8">
                         <Label Text="История и план" FontSize="16" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#233544, Dark=#EAF0F6}" />
                         <Label Text="История стоимости и сохранённый план остаются на устройстве даже после сброса токена."
