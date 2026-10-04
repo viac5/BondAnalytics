@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="BondAnalytics.Mobile.Pages.OnboardingPage"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{AppThemeBinding Light=#F4F6F8, Dark=#07111F}">
+    <ScrollView>
+        <VerticalStackLayout Padding="22,32,22,34" Spacing="18">
+            <Border Padding="20,15" HorizontalOptions="Start" Background="{AppThemeBinding Light=#E5F2EC, Dark=#102824}"
+                    Stroke="{AppThemeBinding Light=#C9E2D8, Dark=#24433F}" StrokeShape="RoundRectangle 18">
+                <Label Text="BOND / ANALYTICS" FontSize="11" CharacterSpacing="2.5"
+                       TextColor="{AppThemeBinding Light=#14795B, Dark=#82DEC0}" />
+            </Border>
+            <Label Text="Ваш портфель.\nВ одном месте." FontSize="34" FontAttributes="Bold"
+                   TextColor="{AppThemeBinding Light=#17232F, Dark=#F0F5FA}" LineHeight="1.08" />
+            <Label Text="Для подключения нужен токен T‑Invest с доступом только на чтение. Он останется на этом устройстве и будет храниться в системном защищённом хранилище."
+                   FontSize="14" TextColor="{AppThemeBinding Light=#526474, Dark=#A5B4C3}" LineHeight="1.25" />
+
+            <Border Padding="19" Background="{AppThemeBinding Light=#FFFFFF, Dark=#111E2C}" Stroke="{AppThemeBinding Light=#DCE4EB, Dark=#1D2D3D}" StrokeShape="RoundRectangle 22">
+                <VerticalStackLayout Spacing="14">
+                    <Label Text="Как выпустить токен" FontSize="18" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#233544, Dark=#EAF0F6}" />
+                    <Grid ColumnDefinitions="34,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="14">
+                        <Border WidthRequest="28" HeightRequest="28" StrokeThickness="0"
+                                StrokeShape="RoundRectangle 14" Background="{AppThemeBinding Light=#D3EADF, Dark=#1C5A4B}">
+                            <Label Text="1" TextColor="White" HorizontalTextAlignment="Center"
+                                   VerticalTextAlignment="Center" FontAttributes="Bold" />
+                        </Border>
+                        <Label Grid.Column="1" Text="Откройте приложение или личный кабинет T‑Invest и перейдите в настройки API."
+                               FontSize="13" TextColor="{AppThemeBinding Light=#485B6B, Dark=#BFCCD7}" VerticalTextAlignment="Center" />
+                        <Border Grid.Row="1" WidthRequest="28" HeightRequest="28" StrokeThickness="0"
+                                StrokeShape="RoundRectangle 14" Background="{AppThemeBinding Light=#D3EADF, Dark=#1C5A4B}">
+                            <Label Text="2" TextColor="White" HorizontalTextAlignment="Center"
+                                   VerticalTextAlignment="Center" FontAttributes="Bold" />
+                        </Border>
+                        <Label Grid.Row="1" Grid.Column="1" Text="Создайте токен для операций с портфелем, выбрав минимально необходимые права — чтение данных."
+                               FontSize="13" TextColor="{AppThemeBinding Light=#485B6B, Dark=#BFCCD7}" VerticalTextAlignment="Center" />
+                        <Border Grid.Row="2" WidthRequest="28" HeightRequest="28" StrokeThickness="0"
+                                StrokeShape="RoundRectangle 14" Background="{AppThemeBinding Light=#D3EADF, Dark=#1C5A4B}">
+                            <Label Text="3" TextColor="White" HorizontalTextAlignment="Center"
+                                   VerticalTextAlignment="Center" FontAttributes="Bold" />
+                        </Border>
+                        <Label Grid.Row="2" Grid.Column="1" Text="Скопируйте токен и вставьте ниже. После сохранения вводить его повторно не потребуется."
+                               FontSize="13" TextColor="{AppThemeBinding Light=#485B6B, Dark=#BFCCD7}" VerticalTextAlignment="Center" />
+                    </Grid>
+                    <Button Text="Открыть T‑Invest" Clicked="OnOpenInvestClicked"
+                            BackgroundColor="{AppThemeBinding Light=#E8EDF2, Dark=#172638}" TextColor="{AppThemeBinding Light=#226F59, Dark=#A9DCCD}" CornerRadius="13" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Padding="18" Background="{AppThemeBinding Light=#FFFFFF, Dark=#111E2C}" Stroke="{AppThemeBinding Light=#DCE4EB, Dark=#1D2D3D}" StrokeShape="RoundRectangle 22">
+                <VerticalStackLayout Spacing="11">
+                    <Label Text="Защищённое подключение" FontSize="17" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#233544, Dark=#EAF0F6}" />
+                    <Entry x:Name="TokenEntry" Placeholder="Вставьте токен T‑Invest"
+                           IsPassword="True" ClearButtonVisibility="WhileEditing"
+                           TextColor="{AppThemeBinding Light=#233544, Dark=#EEF4F8}" PlaceholderColor="{AppThemeBinding Light=#687786, Dark=#708399}"
+                           BackgroundColor="{AppThemeBinding Light=#E8EDF2, Dark=#172638}" />
+                    <Button x:Name="SaveButton" Text="Сохранить токен и продолжить"
+                            Clicked="OnSaveClicked" BackgroundColor="{AppThemeBinding Light=#D3EADF, Dark=#1C5A4B}"
+                            TextColor="{AppThemeBinding Light=#135840, Dark=#EAF8F3}" CornerRadius="14" />
+                    <Label Text="Токен защищён хранилищем Android Keystore и не отправляется никуда, кроме API T‑Invest."
+                           FontSize="11" TextColor="{AppThemeBinding Light=#657789, Dark=#8294A8}" LineBreakMode="WordWrap" />
+                </VerticalStackLayout>
+            </Border>
+            <Label x:Name="ErrorLabel" IsVisible="False" FontSize="12" TextColor="{AppThemeBinding Light=#B42318, Dark=#FF9A8F}"
+                   LineBreakMode="WordWrap" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

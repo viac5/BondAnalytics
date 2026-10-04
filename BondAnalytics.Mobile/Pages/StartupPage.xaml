@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="BondAnalytics.Mobile.Pages.StartupPage"
+             BackgroundColor="{AppThemeBinding Light=#F4F6F8, Dark=#07111F}">
+    <Grid Padding="32" RowDefinitions="*,Auto,*">
+        <VerticalStackLayout Grid.Row="1" Spacing="18" HorizontalOptions="Center">
+            <Label Text="BOND / ANALYTICS" FontSize="13" CharacterSpacing="3"
+                   TextColor="{AppThemeBinding Light=#14795B, Dark=#77D6BA}" HorizontalTextAlignment="Center" />
+            <ActivityIndicator IsRunning="True" Color="{AppThemeBinding Light=#14795B, Dark=#77D6BA}" HorizontalOptions="Center" />
+            <Label x:Name="StatusLabel" Text="Готовим ваш портфель"
+                   TextColor="{AppThemeBinding Light=#526474, Dark=#A9B8C8}" HorizontalTextAlignment="Center" />
+            <Button x:Name="RetryButton" Text="Повторить" IsVisible="False" Clicked="OnRetryClicked"
+                    BackgroundColor="{AppThemeBinding Light=#E5EDF3, Dark=#153247}" TextColor="{AppThemeBinding Light=#233544, Dark=#E9F2F9}" />
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

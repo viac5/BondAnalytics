@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:BondAnalytics.Mobile.Controls"
+             x:Class="BondAnalytics.Mobile.Pages.ChartsPage"
+             BackgroundColor="{AppThemeBinding Light=#F4F6F8, Dark=#07111F}">
+    <Grid RowDefinitions="Auto,*">
+        <VerticalStackLayout Padding="22,18,22,12" Spacing="4">
+            <Label Text="РЫНКИ И ДОХОДНОСТЬ" FontSize="10" CharacterSpacing="2.4" TextColor="{AppThemeBinding Light=#14795B, Dark=#75D6B7}" />
+            <Label Text="Обзор портфеля" FontSize="25" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#17232F, Dark=#F0F5FA}" />
+        </VerticalStackLayout>
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="18,4,18,26" Spacing="15">
+                <Border Padding="17" Background="{AppThemeBinding Light=#FFFFFF, Dark=#111E2C}" Stroke="{AppThemeBinding Light=#DCE4EB, Dark=#1D2D3D}" StrokeShape="RoundRectangle 22">
+                    <VerticalStackLayout Spacing="12">
+                        <Label Text="ВЫБЕРИТЕ ПОКАЗАТЕЛЬ" FontSize="10" CharacterSpacing="1.6"
+                               TextColor="{AppThemeBinding Light=#667786, Dark=#91A2B3}" />
+                        <Picker ItemsSource="{Binding ChartLabelsList}" SelectedIndex="{Binding SelectedChartIndex}"
+                                TextColor="{AppThemeBinding Light=#233544, Dark=#E6EEF5}" BackgroundColor="{AppThemeBinding Light=#E8EDF2, Dark=#172638}" />
+                        <controls:PortfolioChartView Points="{Binding ChartPoints}"
+                                                     IsAllocationChart="{Binding IsAllocationChart}"
+                                                     IsStackedChart="{Binding IsStackedChart}"
+                                                     Series="{Binding ChartSeries}"
+                                                     HeightRequest="280" />
+                    </VerticalStackLayout>
+                </Border>
+                <CollectionView ItemsSource="{Binding ChartSeries}" SelectionMode="None"
+                                ItemsLayout="VerticalGrid, 2">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid ColumnDefinitions="12,*" ColumnSpacing="7" Padding="4,5">
+                                <Ellipse WidthRequest="9" HeightRequest="9" Fill="{Binding Color}"
+                                         VerticalOptions="Center" />
+                                <Label Grid.Column="1" Text="{Binding Name}" FontSize="11"
+                                       TextColor="{AppThemeBinding Light=#667786, Dark=#91A2B3}" LineBreakMode="TailTruncation"
+                                       VerticalTextAlignment="Center" />
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+                <Label Text="Для графиков стоимости и прибыли используются актуальные котировки. Прогноз купонов построен по ближайшим датам выплат."
+                       FontSize="12" TextColor="{AppThemeBinding Light=#657789, Dark=#8294A8}" LineBreakMode="WordWrap" />
+                <CollectionView ItemsSource="{Binding ChartPoints}" SelectionMode="None">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Padding="12,10" ColumnDefinitions="*,Auto">
+                                <Label Text="{Binding Label}" TextColor="{AppThemeBinding Light=#485B6B, Dark=#BCC9D5}" FontSize="12" />
+                                <Label Grid.Column="1" Text="{Binding ValueText}"
+                                       TextColor="{AppThemeBinding Light=#14795B, Dark=#89DEC1}" FontSize="12" FontAttributes="Bold" />
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:BondAnalytics.Mobile.Controls"
+             x:Class="BondAnalytics.Mobile.Pages.AnalyticsPage"
+             BackgroundColor="{AppThemeBinding Light=#F4F6F8, Dark=#07111F}">
+    <Grid RowDefinitions="Auto,*">
+        <VerticalStackLayout Padding="22,18,22,12" Spacing="4">
+            <Label Text="ДЕНЕЖНЫЕ ПОТОКИ" FontSize="10" CharacterSpacing="2.4" TextColor="{AppThemeBinding Light=#14795B, Dark=#75D6B7}" />
+            <Label Text="Аналитика счёта" FontSize="25" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#17232F, Dark=#F0F5FA}" />
+        </VerticalStackLayout>
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="18,4,18,28" Spacing="14">
+                <Border Padding="16" Background="{AppThemeBinding Light=#FFFFFF, Dark=#111E2C}" Stroke="{AppThemeBinding Light=#DCE4EB, Dark=#1D2D3D}" StrokeShape="RoundRectangle 20">
+                    <VerticalStackLayout Spacing="10">
+                        <Picker x:Name="PresetPicker" Title="Быстрый период"
+                                ItemsSource="{Binding Presets}" SelectedIndex="0"
+                                SelectedIndexChanged="OnPresetChanged" TextColor="{AppThemeBinding Light=#233544, Dark=#E6EEF5}"
+                                BackgroundColor="{AppThemeBinding Light=#E8EDF2, Dark=#172638}" />
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                            <DatePicker Date="{Binding FromDate}" Format="dd.MM.yyyy"
+                                        TextColor="{AppThemeBinding Light=#233544, Dark=#E6EEF5}" BackgroundColor="{AppThemeBinding Light=#E8EDF2, Dark=#172638}" />
+                            <DatePicker Grid.Column="1" Date="{Binding ToDate}" Format="dd.MM.yyyy"
+                                        TextColor="{AppThemeBinding Light=#233544, Dark=#E6EEF5}" BackgroundColor="{AppThemeBinding Light=#E8EDF2, Dark=#172638}" />
+                        </Grid>
+                        <Button Text="Рассчитать период" Clicked="OnLoadClicked"
+                                BackgroundColor="{AppThemeBinding Light=#D3EADF, Dark=#1C5A4B}" TextColor="{AppThemeBinding Light=#135840, Dark=#EAF8F3}" CornerRadius="14" />
+                    </VerticalStackLayout>
+                </Border>
+                <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"
+                                   WidthRequest="26" HeightRequest="26" HorizontalOptions="Center"
+                                   Color="{AppThemeBinding Light=#14795B, Dark=#77D6BA}" />
+                <Label Text="{Binding StatusMessage}" FontSize="12" TextColor="{AppThemeBinding Light=#667786, Dark=#97A9BA}" />
+                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="11" RowSpacing="11">
+                    <Border Padding="14" Background="{AppThemeBinding Light=#FFFFFF, Dark=#111E2C}" Stroke="{AppThemeBinding Light=#DCE4EB, Dark=#1D2D3D}" StrokeShape="RoundRectangle 18">
+                        <VerticalStackLayout Spacing="5">
+                            <Label Text="Пополнения" FontSize="11" TextColor="{AppThemeBinding Light=#667786, Dark=#91A2B3}" />
+                            <Label Text="{Binding DepositSummary}" FontSize="15" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#14795B, Dark=#8DDFC1}" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border Grid.Column="1" Padding="14" Background="{AppThemeBinding Light=#FFFFFF, Dark=#111E2C}" Stroke="{AppThemeBinding Light=#DCE4EB, Dark=#1D2D3D}" StrokeShape="RoundRectangle 18">
+                        <VerticalStackLayout Spacing="5">
+                            <Label Text="Выводы" FontSize="11" TextColor="{AppThemeBinding Light=#667786, Dark=#91A2B3}" />
+                            <Label Text="{Binding WithdrawalSummary}" FontSize="15" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#B42318, Dark=#E8B6A8}" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border Grid.Row="1" Padding="14" Background="{AppThemeBinding Light=#FFFFFF, Dark=#111E2C}" Stroke="{AppThemeBinding Light=#DCE4EB, Dark=#1D2D3D}" StrokeShape="RoundRectangle 18">
+                        <VerticalStackLayout Spacing="5">
+                            <Label Text="Чистый поток" FontSize="11" TextColor="{AppThemeBinding Light=#667786, Dark=#91A2B3}" />
+                            <Label Text="{Binding NetFlowSummary}" FontSize="15" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#233544, Dark=#DDE7F0}" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border Grid.Row="1" Grid.Column="1" Padding="14" Background="{AppThemeBinding Light=#FFFFFF, Dark=#111E2C}" Stroke="{AppThemeBinding Light=#DCE4EB, Dark=#1D2D3D}" StrokeShape="RoundRectangle 18">
+                        <VerticalStackLayout Spacing="5">
+                            <Label Text="Результат периода" FontSize="11" TextColor="{AppThemeBinding Light=#667786, Dark=#91A2B3}" />
+                            <Label Text="{Binding ResultSummary}" FontSize="15" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#14795B, Dark=#8DDFC1}" />
+                            <Label Text="{Binding ReturnSummary, StringFormat='Доходность  {0}'}"
+                                   FontSize="11" TextColor="{AppThemeBinding Light=#667786, Dark=#91A2B3}" />
+                        </VerticalStackLayout>
+                    </Border>
+                </Grid>
+                <Label Text="{Binding OperationCounts}" FontSize="12" TextColor="{AppThemeBinding Light=#667786, Dark=#91A2B3}" />
+                <Label Text="{Binding ReturnNote}" FontSize="12" TextColor="{AppThemeBinding Light=#667786, Dark=#91A2B3}" />
+                <Border Padding="16" Background="{AppThemeBinding Light=#FFFFFF, Dark=#111E2C}" Stroke="{AppThemeBinding Light=#DCE4EB, Dark=#1D2D3D}" StrokeShape="RoundRectangle 20">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="Стоимость портфеля" FontSize="16" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#233544, Dark=#EAF0F6}" />
+                        <Label Text="{Binding CurrentValueSummary}" FontSize="12" TextColor="{AppThemeBinding Light=#667786, Dark=#91A2B3}" />
+                        <controls:PortfolioChartView Points="{Binding PortfolioHistory}" HeightRequest="220" />
+                    </VerticalStackLayout>
+                </Border>
+                <Label Text="Операции" FontSize="19" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#233544, Dark=#EAF0F6}" />
+                <CollectionView ItemsSource="{Binding Operations}" SelectionMode="None">
+                    <CollectionView.EmptyView>
+                        <Label Text="За этот период операции не найдены." Padding="16"
+                               TextColor="{AppThemeBinding Light=#667786, Dark=#91A2B3}" HorizontalTextAlignment="Center" />
+                    </CollectionView.EmptyView>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border Margin="0,0,0,9" Padding="14" Background="{AppThemeBinding Light=#FFFFFF, Dark=#111E2C}"
+                                    Stroke="{AppThemeBinding Light=#DCE4EB, Dark=#1D2D3D}" StrokeShape="RoundRectangle 17">
+                                <Grid ColumnDefinitions="32,*,Auto" RowDefinitions="Auto,Auto,Auto">
+                                    <Border WidthRequest="28" HeightRequest="28" StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 14" Background="{AppThemeBinding Light=#E4EBF1, Dark=#1D3043}"
+                                            VerticalOptions="Center">
+                                        <Label Text="{Binding IconGlyph}" FontSize="17" FontAttributes="Bold"
+                                               TextColor="{AppThemeBinding Light=#14795B, Dark=#75D6B7}" HorizontalTextAlignment="Center"
+                                               VerticalTextAlignment="Center" />
+                                    </Border>
+                                    <VerticalStackLayout Grid.Column="1" Spacing="4">
+                                        <Label Text="{Binding InstrumentText}" FontSize="13"
+                                               FontAttributes="Bold" TextColor="{AppThemeBinding Light=#233544, Dark=#E7EEF5}" />
+                                        <Label Text="{Binding TypeText}" FontSize="11" TextColor="{AppThemeBinding Light=#14795B, Dark=#78D5B8}" />
+                                    </VerticalStackLayout>
+                                    <Label Grid.Column="2" Text="{Binding AmountText}" FontSize="12"
+                                           FontAttributes="Bold" TextColor="{Binding AmountColor}" HorizontalTextAlignment="End" />
+                                    <Label Grid.Row="1" Grid.Column="1" Text="{Binding DateText}" FontSize="10" TextColor="{AppThemeBinding Light=#657789, Dark=#8294A8}" />
+                                    <Label Grid.Row="1" Grid.Column="2" Text="{Binding QuantityText}"
+                                           FontSize="10" TextColor="{AppThemeBinding Light=#657789, Dark=#8294A8}" HorizontalTextAlignment="End" />
+                                    <Label Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding ResultText}"
+                                           FontSize="11" TextColor="{Binding ResultColor}" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

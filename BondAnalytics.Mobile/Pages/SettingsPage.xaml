@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="BondAnalytics.Mobile.Pages.SettingsPage"
+             BackgroundColor="{AppThemeBinding Light=#F4F6F8, Dark=#07111F}">
+    <Grid RowDefinitions="Auto,*">
+        <VerticalStackLayout Padding="22,18,22,12" Spacing="4">
+            <Label Text="БЕЗОПАСНОСТЬ" FontSize="10" CharacterSpacing="2.4" TextColor="{AppThemeBinding Light=#14795B, Dark=#75D6B7}" />
+            <Label Text="Настройки" FontSize="25" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#17232F, Dark=#F0F5FA}" />
+        </VerticalStackLayout>
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="18,4,18,28" Spacing="14">
+                <Border Padding="18" Background="{AppThemeBinding Light=#FFFFFF, Dark=#111E2C}" Stroke="{AppThemeBinding Light=#DCE4EB, Dark=#1D2D3D}" StrokeShape="RoundRectangle 21">
+                    <VerticalStackLayout Spacing="11">
+                        <Label Text="Подключение T‑Invest" FontSize="17" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#233544, Dark=#EAF0F6}" />
+                        <Grid ColumnDefinitions="12,*" ColumnSpacing="10">
+                            <Ellipse WidthRequest="9" HeightRequest="9" Fill="{AppThemeBinding Light=#14795B, Dark=#70D7B8}"
+                                     VerticalOptions="Center" />
+                            <Label Grid.Column="1" Text="{Binding TokenStatusText}"
+                                   FontSize="13" TextColor="{AppThemeBinding Light=#485B6B, Dark=#B7C5D1}" />
+                        </Grid>
+                        <Label Text="Токен хранится локально в защищённом хранилище Android. Его значение недоступно приложению для отображения."
+                               FontSize="12" TextColor="{AppThemeBinding Light=#657789, Dark=#8294A8}" />
+                        <Button Text="Сбросить токен" Clicked="OnResetTokenClicked"
+                                BackgroundColor="{AppThemeBinding Light=#F6E4E3, Dark=#3A2528}" TextColor="{AppThemeBinding Light=#B42318, Dark=#FFB4A9}" CornerRadius="13" />
+                    </VerticalStackLayout>
+                </Border>
+                <Border Padding="18" Background="{AppThemeBinding Light=#FFFFFF, Dark=#111E2C}" Stroke="{AppThemeBinding Light=#DCE4EB, Dark=#1D2D3D}" StrokeShape="RoundRectangle 21">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
+                        <VerticalStackLayout Spacing="4" VerticalOptions="Center">
+                            <Label Text="Светлая тема" FontSize="16" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#233544, Dark=#EAF0F6}" />
+                            <Label Text="По умолчанию используется тёмная тема"
+                                   FontSize="12" TextColor="{AppThemeBinding Light=#667786, Dark=#91A2B3}" />
+                        </VerticalStackLayout>
+                        <Switch x:Name="ThemeSwitch" Grid.Column="1"
+                                Toggled="OnThemeToggled" OnColor="{AppThemeBinding Light=#14795B, Dark=#70D7B8}" />
+                    </Grid>
+                </Border>
+                <Border Padding="18" Background="{AppThemeBinding Light=#FFFFFF, Dark=#111E2C}" Stroke="{AppThemeBinding Light=#DCE4EB, Dark=#1D2D3D}" StrokeShape="RoundRectangle 21">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="История и план" FontSize="16" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#233544, Dark=#EAF0F6}" />
+                        <Label Text="История стоимости и сохранённый план остаются на устройстве даже после сброса токена."
+                               FontSize="12" TextColor="{AppThemeBinding Light=#667786, Dark=#91A2B3}" />
+                    </VerticalStackLayout>
+                </Border>
+                <Label Text="Bond Analytics · T‑Invest API" FontSize="11"
+                       TextColor="{AppThemeBinding Light=#687786, Dark=#627489}" HorizontalTextAlignment="Center" />
+                <Label x:Name="StatusLabel" IsVisible="False" FontSize="12" TextColor="{AppThemeBinding Light=#B42318, Dark=#FF9A8F}" />
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

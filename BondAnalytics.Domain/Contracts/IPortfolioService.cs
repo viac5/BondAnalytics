@@ -10,7 +10,7 @@ namespace Domain
 {
     public interface IPortfolioService
     {
-        Task<PortfolioData> GetPortfolioAsync();
+        Task<PortfolioData> GetPortfolioAsync(CancellationToken cancellationToken = default);
         Task<IReadOnlyList<PortfolioOperation>> GetOperationsAsync(
             DateTimeOffset from,
             DateTimeOffset to,
@@ -21,4 +21,3 @@ namespace Domain
 
     }
 }
-

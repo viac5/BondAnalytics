@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace Domain
 {
@@ -86,12 +87,17 @@ namespace Domain
 
     public static class InvestmentPlanCalculator
     {
-        public static InvestmentPlanEvaluation Calculate(InvestmentPlan plan, IReadOnlyList<PortfolioOperation> actualOperations, DateTime today)
+        public static InvestmentPlanEvaluation Calculate(
+            InvestmentPlan plan,
+            IReadOnlyList<PortfolioOperation> actualOperations,
+            DateTime today,
+            CancellationToken cancellationToken = default)
         {
             Validate(plan);
             var startDate = plan.StartDate.Date;
             var endDate = startDate.AddYears(plan.DurationYears).AddDays(-1);
-            var contributionPeriods = BuildContributionPeriods(plan, actualOperations, today.Date, endDate);
+            var contributionPeriods = BuildContributionPeriods(
+                plan, actualOperations, today.Date, endDate, cancellationToken);
             var contributionsByDate = contributionPeriods.ToDictionary(period => period.StartDate, period => period.PlannedAmountRub);
             var points = new List<InvestmentPlanPoint>();
 
@@ -107,6 +113,7 @@ namespace Domain
 
             for (var date = startDate; date <= endDate; date = date.AddDays(1))
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 if (contributionsByDate.TryGetValue(date, out var contribution))
                 {
                     portfolioValue += contribution;
@@ -152,7 +159,8 @@ namespace Domain
             InvestmentPlan plan,
             IReadOnlyList<PortfolioOperation> actualOperations,
             DateTime today,
-            DateTime endDate)
+            DateTime endDate,
+            CancellationToken cancellationToken)
         {
             var periods = new List<InvestmentPlanPeriod>();
             var periodStart = GetFirstContributionDate(plan);
@@ -166,6 +174,7 @@ namespace Domain
 
             while (periodStart <= endDate)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 var nextPeriodStart = Advance(periodStart, plan);
                 var periodEnd = nextPeriodStart.AddDays(-1) > endDate ? endDate : nextPeriodStart.AddDays(-1);
                 var plannedAmount = plan.ContributionAmountRub * AnnualFactor(

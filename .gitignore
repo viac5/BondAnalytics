@@ -32,6 +32,12 @@ x86/
 bld/
 [Bb]in/
 [Oo]bj/
+*.apk
+*.aab
+*.apks
+*.keystore
+*.jks
+.idea/
 [Ll]og/
 [Ll]ogs/
 

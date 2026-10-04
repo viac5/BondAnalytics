@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="BondAnalytics.Mobile.MainPage"
+             BackgroundColor="{AppThemeBinding Light=#F4F6F8, Dark=#07111F}">
+    <Grid RowDefinitions="Auto,*">
+        <Grid Padding="22,14,22,10" ColumnDefinitions="*,Auto">
+            <VerticalStackLayout Spacing="3">
+                <Label Text="BOND / ANALYTICS" FontSize="11" CharacterSpacing="2.8" TextColor="{AppThemeBinding Light=#14795B, Dark=#75D6B7}" />
+                <Label Text="Мой портфель" FontSize="25" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#17232F, Dark=#F0F5FA}" />
+            </VerticalStackLayout>
+            <ImageButton Grid.Column="1" Source="refresh.png" Padding="12" WidthRequest="46" HeightRequest="46"
+                         CornerRadius="23" BackgroundColor="{AppThemeBinding Light=#E8EDF2, Dark=#142739}"
+                         Clicked="OnRefreshClicked" />
+        </Grid>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="18,4,18,28" Spacing="16">
+                <Border Stroke="{AppThemeBinding Light=#C9E2D8, Dark=#24433F}" StrokeThickness="1" StrokeShape="RoundRectangle 26"
+                        Padding="22" Background="{AppThemeBinding Light=#E5F2EC, Dark=#102824}">
+                    <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="7">
+                        <Label Text="ОБЩАЯ СТОИМОСТЬ" FontSize="11" CharacterSpacing="1.5" TextColor="{AppThemeBinding Light=#56756A, Dark=#9CB8AF}" />
+                        <Label Grid.Row="1" Text="{Binding TotalFullValue, StringFormat='{0:N0} ₽'}"
+                               FontSize="35" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#17232F, Dark=#F2F8F5}" />
+                        <Label Grid.Row="2" Text="{Binding PositionCount, StringFormat='{0} позиций'}"
+                               FontSize="13" TextColor="{AppThemeBinding Light=#56756A, Dark=#A6BDB5}" />
+                        <Border Grid.Row="1" Grid.Column="1" Grid.RowSpan="2" Padding="10,7"
+                                StrokeThickness="0" StrokeShape="RoundRectangle 14" Background="{AppThemeBinding Light=#D7EBE3, Dark=#1E3D35}"
+                                VerticalOptions="Center">
+                            <Label Text="{Binding TotalProfitPercent, StringFormat='{0:+0.0%;-0.0%;0.0%}'}"
+                                   TextColor="{Binding TotalProfitPercentColor}" FontSize="13" FontAttributes="Bold" />
+                        </Border>
+                        <Grid Grid.Row="3" ColumnDefinitions="*,*" ColumnSpacing="12" Margin="0,9,0,0">
+                            <VerticalStackLayout Spacing="3">
+                                <Label Text="Результат" FontSize="11" TextColor="{AppThemeBinding Light=#56756A, Dark=#9CB8AF}" />
+                                <Label Text="{Binding TotalProfit, StringFormat='{0:+#,0;-#,0;0} ₽'}"
+                                       FontSize="15" FontAttributes="Bold" TextColor="{Binding TotalProfitColor}" />
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="1" Spacing="3">
+                                <Label Text="Купонная доходность" FontSize="11" TextColor="{AppThemeBinding Light=#56756A, Dark=#9CB8AF}" />
+                                <Label Text="{Binding WeightedYield, StringFormat='{0:P1}'}"
+                                       FontSize="15" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#166C4C, Dark=#C5F1DE}" />
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                    <Border Padding="15" Background="{AppThemeBinding Light=#FFFFFF, Dark=#111E2C}" Stroke="{AppThemeBinding Light=#DCE4EB, Dark=#1D2D3D}" StrokeShape="RoundRectangle 19">
+                        <VerticalStackLayout Spacing="5">
+                            <Label Text="Рыночная стоимость" FontSize="11" TextColor="{AppThemeBinding Light=#687786, Dark=#8FA1B3}" />
+                            <Label Text="{Binding TotalPortfolioValue, StringFormat='{0:N0} ₽'}"
+                                   FontSize="16" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#233544, Dark=#E4ECF3}" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border Grid.Column="1" Padding="15" Background="{AppThemeBinding Light=#FFFFFF, Dark=#111E2C}" Stroke="{AppThemeBinding Light=#DCE4EB, Dark=#1D2D3D}" StrokeShape="RoundRectangle 19">
+                        <VerticalStackLayout Spacing="5">
+                            <Label Text="Накопленный купон" FontSize="11" TextColor="{AppThemeBinding Light=#687786, Dark=#8FA1B3}" />
+                            <Label Text="{Binding TotalNkd, StringFormat='{0:N0} ₽'}"
+                                   FontSize="16" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#233544, Dark=#E4ECF3}" />
+                        </VerticalStackLayout>
+                    </Border>
+                </Grid>
+
+                <Grid ColumnDefinitions="*,Auto">
+                    <Label Text="Активы" FontSize="20" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#233544, Dark=#EAF0F6}"
+                           VerticalOptions="Center" />
+                    <Label Grid.Column="1" Text="{Binding LastUpdatedText}" FontSize="11"
+                           TextColor="{AppThemeBinding Light=#687786, Dark=#8093A6}" VerticalOptions="Center" />
+                </Grid>
+                <Label Text="{Binding RealTimeStatusText}" FontSize="11" TextColor="{AppThemeBinding Light=#14795B, Dark=#75BFA8}" />
+
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                    <Picker Title="Фильтр"
+                            ItemsSource="{Binding FilterLabelsList}"
+                            SelectedIndex="{Binding SelectedFilterIndex}"
+                            TextColor="{AppThemeBinding Light=#233544, Dark=#E6EEF5}" BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#111E2C}" />
+                    <Picker Grid.Column="1" Title="Сортировка"
+                            ItemsSource="{Binding SortLabelsList}"
+                            SelectedIndex="{Binding SelectedSortIndex}"
+                            TextColor="{AppThemeBinding Light=#233544, Dark=#E6EEF5}" BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#111E2C}" />
+                </Grid>
+
+                <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"
+                                   Color="{AppThemeBinding Light=#14795B, Dark=#77D6BA}"
+                                   HorizontalOptions="Center" WidthRequest="28" HeightRequest="28" />
+                <Label Text="{Binding StatusMessage}" FontSize="12" TextColor="{AppThemeBinding Light=#667786, Dark=#97A9BA}" />
+
+                <CollectionView ItemsSource="{Binding VisiblePositions}" SelectionMode="None">
+                    <CollectionView.EmptyView>
+                        <Border Padding="24" Background="{AppThemeBinding Light=#FFFFFF, Dark=#111E2C}" Stroke="{AppThemeBinding Light=#DCE4EB, Dark=#1D2D3D}"
+                                StrokeShape="RoundRectangle 20">
+                            <VerticalStackLayout Spacing="8" HorizontalOptions="Center">
+                                <Label Text="Пока нет активов" FontSize="17" FontAttributes="Bold"
+                                       TextColor="{AppThemeBinding Light=#233544, Dark=#E6EEF5}" HorizontalTextAlignment="Center" />
+                                <Label Text="Проверьте токен и обновите портфель."
+                                       FontSize="13" TextColor="{AppThemeBinding Light=#667786, Dark=#91A2B3}" HorizontalTextAlignment="Center" />
+                            </VerticalStackLayout>
+                        </Border>
+                    </CollectionView.EmptyView>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border Margin="0,0,0,10" Padding="16,14" Background="{AppThemeBinding Light=#FFFFFF, Dark=#111E2C}"
+                                    Stroke="{AppThemeBinding Light=#DCE4EB, Dark=#1D2D3D}" StrokeShape="RoundRectangle 20">
+                                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="7">
+                                    <VerticalStackLayout Spacing="3">
+                                        <Label Text="{Binding Name}" FontSize="16" FontAttributes="Bold"
+                                               TextColor="{AppThemeBinding Light=#233544, Dark=#EEF4F8}" />
+                                        <Label Text="{Binding Ticker}" FontSize="12" TextColor="{AppThemeBinding Light=#687786, Dark=#8FA1B3}"
+                                               LineBreakMode="TailTruncation" />
+                                    </VerticalStackLayout>
+                                    <VerticalStackLayout Grid.Column="1" Spacing="3" HorizontalOptions="End">
+                                        <Label Text="{Binding TotalValue, StringFormat='{0:N0} ₽'}"
+                                               FontSize="16" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#233544, Dark=#EAF2F7}"
+                                               HorizontalTextAlignment="End" />
+                                        <Label Text="{Binding Profit, StringFormat='{0:+#,0;-#,0;0} ₽'}"
+                                               FontSize="12" TextColor="{Binding ProfitColor}" HorizontalTextAlignment="End" />
+                                    </VerticalStackLayout>
+                                    <Grid Grid.Row="1" Grid.ColumnSpan="2" ColumnDefinitions="*,*" RowDefinitions="Auto,Auto"
+                                          Padding="0,7,0,0" RowSpacing="6">
+                                        <VerticalStackLayout Spacing="2">
+                                            <Label Text="Количество" FontSize="10" TextColor="{AppThemeBinding Light=#667786, Dark=#91A2B3}" />
+                                            <Label Text="{Binding Quantity, StringFormat='{0:N2}'}"
+                                                   FontSize="12" TextColor="{AppThemeBinding Light=#485B6B, Dark=#C8D3DE}" LineBreakMode="NoWrap" />
+                                        </VerticalStackLayout>
+                                        <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                            <Label Text="Доходность" FontSize="10" TextColor="{AppThemeBinding Light=#667786, Dark=#91A2B3}" />
+                                            <Label Text="{Binding CurrentYield, StringFormat='{0:P1}'}"
+                                                   FontSize="12" TextColor="{AppThemeBinding Light=#485B6B, Dark=#C8D3DE}" LineBreakMode="NoWrap" />
+                                        </VerticalStackLayout>
+                                        <Label Grid.Row="1" Grid.ColumnSpan="2"
+                                               Text="{Binding TotalAccruedInterest, StringFormat='НКД  {0:N0} ₽'}"
+                                               FontSize="11" TextColor="{AppThemeBinding Light=#667786, Dark=#91A2B3}" />
+                                    </Grid>
+                                    <Label Grid.Row="2" Grid.ColumnSpan="2"
+                                           Text="{Binding Group}" FontSize="10" CharacterSpacing="0.6"
+                                           TextColor="{AppThemeBinding Light=#14795B, Dark=#6FCDB0}" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

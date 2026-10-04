@@ -22,9 +22,15 @@ namespace Infrastructure
         private InvestApiClient? _client;
 
         public TinkoffApiService(ITokenProvider tokenProvider, ILogger logger)
+            : this(tokenProvider, logger, null)
+        {
+        }
+
+        public TinkoffApiService(ITokenProvider tokenProvider, ILogger logger, InvestApiClient? client)
         {
             _tokenProvider = tokenProvider;
             _logger = logger.ForContext<TinkoffApiService>();
+            _client = client;
         }
 
         private InvestApiClient GetClient()
@@ -55,23 +61,24 @@ namespace Infrastructure
         }
 
 
-        public async Task<PortfolioData> GetPortfolioAsync()
+        public async Task<PortfolioData> GetPortfolioAsync(CancellationToken cancellationToken = default)
         {
             var client = GetClient();
             _logger.Information("Requesting brokerage accounts");
-            var accountId = await GetAccountIdAsync(client);
+            var accountId = await GetAccountIdAsync(client, cancellationToken);
 
             var portfolio = await client.Operations.GetPortfolioAsync(new PortfolioRequest
             {
                 AccountId = accountId,
                 Currency = PortfolioRequest.Types.CurrencyRequest.Rub
-            });
+            }, cancellationToken: cancellationToken);
             _logger.Information("Portfolio positions received: {PositionCount}", portfolio.Positions.Count);
 
             var result = new List<PortfolioItem>();
 
             foreach (var pos in portfolio.Positions)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 var ticker = pos.Ticker;          // SU26243RMFS4
                 var uid = pos.InstrumentUid;      // UUID
 
@@ -80,7 +87,7 @@ namespace Infrastructure
                 {
                     Id = uid,
                     IdType = InstrumentIdType.Uid
-                });
+                }, cancellationToken: cancellationToken);
 
                 //decimal nominal = await GetNominalAsync(uid, instrument);
 
@@ -102,7 +109,7 @@ namespace Infrastructure
 
                 var lot = instrument.Instrument.Lot;
 
-                var analytics = await GetBondAsync(client, uid, instrument);
+                var analytics = await GetBondAsync(client, uid, instrument, cancellationToken);
 
 
                 result.Add(new PortfolioItem(
@@ -169,7 +176,7 @@ namespace Infrastructure
             CancellationToken cancellationToken)
         {
             var client = GetClient();
-            var accountId = await GetAccountIdAsync(client);
+            var accountId = await GetAccountIdAsync(client, cancellationToken);
             var request = new GetOperationsByCursorRequest
             {
                 AccountId = accountId,
@@ -229,18 +236,20 @@ namespace Infrastructure
             return operations.OrderByDescending(operation => operation.Date).ToList();
         }
 
-        private async Task<string> GetAccountIdAsync(InvestApiClient client)
+        private async Task<string> GetAccountIdAsync(
+            InvestApiClient client,
+            CancellationToken cancellationToken = default)
         {
             if (!string.IsNullOrWhiteSpace(_accountId))
                 return _accountId;
 
-            await _accountIdLock.WaitAsync();
+            await _accountIdLock.WaitAsync(cancellationToken);
             try
             {
                 if (!string.IsNullOrWhiteSpace(_accountId))
                     return _accountId;
 
-                var accounts = await client.Users.GetAccountsAsync();
+                var accounts = await client.Users.GetAccountsAsync(cancellationToken: cancellationToken);
                 _accountId = accounts.Accounts.FirstOrDefault()?.Id;
                 if (string.IsNullOrWhiteSpace(_accountId))
                     throw new InvalidOperationException("Нет доступных брокерских счетов.");
@@ -280,7 +289,7 @@ namespace Infrastructure
                 _instrumentNames.TryAdd(instrumentUid, resolvedName);
                 return resolvedName;
             }
-            catch (RpcException ex)
+            catch (RpcException ex) when (!cancellationToken.IsCancellationRequested)
             {
                 _logger.Warning(ex, "Could not resolve instrument name for {InstrumentUid}", instrumentUid);
                 return string.IsNullOrWhiteSpace(fallback) ? instrumentUid : fallback;
@@ -351,7 +360,11 @@ namespace Infrastructure
 
         //    return ToDecimal(bond.Instrument.Nominal);
         //}
-        private async Task<BondItem?> GetBondAsync(InvestApiClient client, string uid, InstrumentResponse inst)
+        private async Task<BondItem?> GetBondAsync(
+            InvestApiClient client,
+            string uid,
+            InstrumentResponse inst,
+            CancellationToken cancellationToken)
         {
             // Если это не облигация — возвращаем null
             if (!string.Equals(inst.Instrument.InstrumentType, "BOND", StringComparison.OrdinalIgnoreCase))
@@ -361,7 +374,7 @@ namespace Infrastructure
             {
                 Id = uid,
                 IdType = InstrumentIdType.Uid
-            });
+            }, cancellationToken: cancellationToken);
 
             var bond = await call.ResponseAsync;
 
@@ -372,7 +385,7 @@ namespace Infrastructure
                 InstrumentId = uid,
                 From = Timestamp.FromDateTime(DateTime.UtcNow.AddYears(-1)),
                 To = Timestamp.FromDateTime(DateTime.UtcNow.AddYears(2))
-            });
+            }, cancellationToken: cancellationToken);
 
             var nextCoupon = coupons.Events
                 .Where(c => c.CouponDate.ToDateTime() > DateTime.Now)
@@ -409,7 +422,7 @@ namespace Infrastructure
             IEnumerable<string> uids,
             [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
-            using var stream = GetClient().MarketDataStream.MarketDataStream();
+            using var stream = GetClient().MarketDataStream.MarketDataStream(cancellationToken: cancellationToken);
 
             var request = new MarketDataRequest
             {
@@ -426,7 +439,7 @@ namespace Infrastructure
                 );
             }
 
-            await stream.RequestStream.WriteAsync(request);
+            await stream.RequestStream.WriteAsync(request, cancellationToken);
 
             await foreach (var response in stream.ResponseStream.ReadAllAsync(cancellationToken))
             {

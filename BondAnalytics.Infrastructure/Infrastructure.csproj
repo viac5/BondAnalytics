@@ -10,6 +10,7 @@
     <PackageReference Include="Tinkoff.InvestApi" Version="0.6.18" />
     <PackageReference Include="Serilog" Version="4.3.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0" />
+    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.12-pre20260709125052" />
   </ItemGroup>
 
   <ItemGroup>
