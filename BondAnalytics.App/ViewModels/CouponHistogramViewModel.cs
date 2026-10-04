@@ -1,10 +1,13 @@
 ﻿using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.Annotations;
-using OxyPlot.Legends;
+using OxyPlot.Series;
+using App.Localization;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Windows.Media;
 
 namespace App.ViewModels
 {
@@ -12,20 +15,18 @@ namespace App.ViewModels
     {
         public PlotModel PlotModel { get; }
         public List<SegmentInfo> Segments { get; } = new List<SegmentInfo>();
+        public List<CouponLegendItem> LegendItems { get; } = new();
 
-        public CouponHistogramViewModel(List<PortfolioItemViewModel> items)
+        public CouponHistogramViewModel(List<PortfolioItemViewModel> items, LocalizationManager localization)
         {
             PlotModel = new PlotModel
             {
-                Title = "Накопительная гистограмма купонов"
+                Title = localization.Get("Chart.CouponTitle"),
+                Background = OxyColors.White,
+                PlotAreaBackground = OxyColors.White,
+                TextColor = OxyColor.FromRgb(43, 57, 52),
+                PlotAreaBorderColor = OxyColor.FromRgb(220, 227, 222)
             };
-
-            PlotModel.Legends.Add(new Legend
-            {
-                LegendPlacement = LegendPlacement.Outside,
-                LegendPosition = LegendPosition.BottomCenter,
-                LegendOrientation = LegendOrientation.Horizontal
-            });
 
             // тикер -> Имя бумаги
             var nameByTicker = items
@@ -34,13 +35,7 @@ namespace App.ViewModels
 
             var monthBuckets = new Dictionary<DateTime, Dictionary<string, decimal>>();
 
-            var firstCouponDate = items
-                .Where(x => x.NextCouponDate != null)
-                .Select(x => x.NextCouponDate.Value.Date)
-                .DefaultIfEmpty(DateTime.Today)
-                .Min();
-
-            var horizonEnd = firstCouponDate.AddYears(1);
+            var horizonEnd = DateTime.Today.AddYears(1);
 
             foreach (var bond in items)
             {
@@ -101,32 +96,23 @@ namespace App.ViewModels
 
             if (monthBuckets.Count == 0)
             {
-                // Добавляем сообщение об отсутствии данных
-                PlotModel.Axes.Add(new LinearAxis
-                {
-                    Position = AxisPosition.Bottom,
-                    Minimum = 0,
-                    Maximum = 1,
-                    MajorStep = 1,
-                    LabelFormatter = _ => ""
-                });
-
                 PlotModel.Axes.Add(new LinearAxis
                 {
                     Position = AxisPosition.Left,
                     Minimum = 0,
                     Maximum = 1,
-                    Title = "Купоны, ₽"
+                    Title = "Выплаты, ₽"
+                });
+
+                PlotModel.Axes.Add(new CategoryAxis
+                {
+                    Position = AxisPosition.Bottom
                 });
 
                 PlotModel.Annotations.Add(new TextAnnotation
                 {
-                    Text = "Нет данных для отображения гистограммы\n" +
-                           "Возможные причины:\n" +
-                           "- У облигаций не указаны даты следующих купонов\n" +
-                           "- Нулевые или отрицательные значения купонов\n" +
-                           "- Отсутствие купонных выплат",
-                    TextColor = OxyColors.Red,
+                          Text = "Нет ожидаемых купонных выплат в ближайшие 12 месяцев",
+                          TextColor = OxyColor.FromRgb(104, 119, 115),
                     Stroke = OxyColors.Transparent,
                     FontSize = 14,
                     TextPosition = new DataPoint(0.5, 0.5),
@@ -138,7 +124,7 @@ namespace App.ViewModels
             }
 
             var months = monthBuckets.Keys.OrderBy(d => d).ToList();
-            var monthLabels = months.Select(m => m.ToString("MMM yyyy")).ToList();
+            var monthLabels = months.Select(m => m.ToString("MMM yy", CultureInfo.GetCultureInfo("ru-RU"))).ToList();
 
             var tickers = monthBuckets.Values
                 .SelectMany(d => d.Keys)
@@ -162,10 +148,8 @@ namespace App.ViewModels
                 MinorStep = 1,
                 LabelFormatter = value =>
                 {
-                    int index = (int)Math.Round(value);
-                    return index >= 0 && index < monthLabels.Count
-                        ? monthLabels[index]
-                        : "";
+                    var index = (int)Math.Round(value);
+                    return index >= 0 && index < monthLabels.Count ? monthLabels[index] : string.Empty;
                 }
             });
 
@@ -173,8 +157,11 @@ namespace App.ViewModels
             {
                 Position = AxisPosition.Left,
                 Minimum = 0,
-                Maximum = (double)(maxMonthSum * 1.15m),
-                Title = "Купоны, ₽"
+                Maximum = Math.Max(1, (double)(maxMonthSum * 1.15m)),
+                Title = "Выплаты, ₽",
+                StringFormat = "#,##0",
+                MajorGridlineStyle = LineStyle.Solid,
+                MajorGridlineColor = OxyColor.FromRgb(232, 237, 233)
             });
 
             var colorMap = new Dictionary<string, OxyColor>();
@@ -185,91 +172,91 @@ namespace App.ViewModels
                 if (!colorMap.TryGetValue(ticker, out var c))
                 {
                     var baseColor = ColorPalette.Colors[colorIndex % ColorPalette.Colors.Count];
-                    c = OxyColor.FromAColor(130, baseColor);
+                    c = OxyColor.FromAColor(255, baseColor);
                     colorMap[ticker] = c;
                     colorIndex++;
                 }
                 return c;
             }
 
-            foreach (var ticker in tickers)
-            {
-                var title = nameByTicker[ticker];
-
-                PlotModel.Series.Add(new OxyPlot.Series.LineSeries
+            var tickerTotals = tickers
+                .Select(ticker => new
                 {
-                    Title = title,
-                    Color = GetColor(ticker),
-                    LineStyle = LineStyle.Solid,
-                    StrokeThickness = 6,
-                    MarkerType = MarkerType.None
-                });
-            }
+                    Ticker = ticker,
+                    Total = monthBuckets.Values.Sum(bucket => bucket.GetValueOrDefault(ticker))
+                })
+                .OrderByDescending(item => item.Total)
+                .Take(14);
 
-            //рисуем столбцы + сохраняем сегменты
+            foreach (var item in tickerTotals)
+            {
+                var color = GetColor(item.Ticker);
+                LegendItems.Add(new CouponLegendItem(
+                    nameByTicker[item.Ticker],
+                    new SolidColorBrush(Color.FromRgb(color.R, color.G, color.B))));
+            }
 
             for (int monthIndex = 0; monthIndex < months.Count; monthIndex++)
             {
-                double xCenter = monthIndex;
-                double halfWidth = 0.4;
-                double x0 = xCenter - halfWidth;
-                double x1 = xCenter + halfWidth;
-
-                double currentBottom = 0;
-
-                var bucket = monthBuckets[months[monthIndex]];
-                decimal totalMonthSum = bucket.Values.Sum();
+                var month = months[monthIndex];
+                var currentBottom = 0d;
+                var totalMonthSum = monthBuckets[month].Values.Sum();
 
                 foreach (var ticker in tickers)
                 {
-                    if (!bucket.TryGetValue(ticker, out var sum) || sum <= 0)
+                    var amount = monthBuckets[month].GetValueOrDefault(ticker);
+                    if (amount <= 0)
                         continue;
 
-                    var color = GetColor(ticker);
-                    var name = nameByTicker[ticker];
-
-                    var rect = new RectangleAnnotation
+                    PlotModel.Annotations.Add(new RectangleAnnotation
                     {
-                        MinimumX = x0,
-                        MaximumX = x1,
+                        MinimumX = monthIndex - 0.42,
+                        MaximumX = monthIndex + 0.42,
                         MinimumY = currentBottom,
-                        MaximumY = currentBottom + (double)sum,
-                        Fill = color,
-                        Stroke = OxyColors.Black,
-                        StrokeThickness = 0.5
-                    };
-
-                    PlotModel.Annotations.Add(rect);
-
- 
-                    Segments.Add(new SegmentInfo
-                    {
-                        Name = name,
-                        Value = sum,
-                        Month = months[monthIndex],
-                        X0 = x0,
-                        X1 = x1,
-                        Y0 = currentBottom,
-                        Y1 = currentBottom + (double)sum
+                        MaximumY = currentBottom + (double)amount,
+                        Fill = GetColor(ticker),
+                        Stroke = OxyColors.White,
+                        StrokeThickness = 1
                     });
 
-                    currentBottom += (double)sum;
+                    Segments.Add(new SegmentInfo
+                    {
+                        Name = nameByTicker[ticker],
+                        Value = amount,
+                        Month = month,
+                        X0 = monthIndex - 0.45,
+                        X1 = monthIndex + 0.45,
+                        Y0 = currentBottom,
+                        Y1 = currentBottom + (double)amount
+                    });
+                    currentBottom += (double)amount;
                 }
 
-                //  Подпись суммы столбца
                 PlotModel.Annotations.Add(new TextAnnotation
                 {
                     Text = $"{totalMonthSum:N0}",
-                    TextColor = OxyColors.Black,
+                    TextColor = OxyColor.FromRgb(43, 57, 52),
                     Stroke = OxyColors.Transparent,
-                    FontSize = 12,
+                    FontSize = 10,
                     TextPosition = new DataPoint(
-                        xCenter,
-                        (double)totalMonthSum + (double)(maxMonthSum * 0.02m)),
+                        monthIndex,
+                        (double)totalMonthSum + (double)(maxMonthSum * 0.025m)),
                     TextHorizontalAlignment = OxyPlot.HorizontalAlignment.Center,
                     TextVerticalAlignment = OxyPlot.VerticalAlignment.Bottom
                 });
             }
+        }
+    }
+
+    public sealed class CouponLegendItem
+    {
+        public string Name { get; }
+        public Brush Color { get; }
+
+        public CouponLegendItem(string name, Brush color)
+        {
+            Name = name;
+            Color = color;
         }
     }
 }

@@ -43,7 +43,7 @@ namespace BondAnalytics.App {
         /// InitializeComponent
         /// </summary>
         [System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [System.CodeDom.Compiler.GeneratedCodeAttribute("PresentationBuildTasks", "10.0.3.0")]
+        [System.CodeDom.Compiler.GeneratedCodeAttribute("PresentationBuildTasks", "10.0.10.0")]
         public void InitializeComponent() {
             
             #line 4 "..\..\..\..\App.xaml"
@@ -58,7 +58,7 @@ namespace BondAnalytics.App {
         /// </summary>
         [System.STAThreadAttribute()]
         [System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [System.CodeDom.Compiler.GeneratedCodeAttribute("PresentationBuildTasks", "10.0.3.0")]
+        [System.CodeDom.Compiler.GeneratedCodeAttribute("PresentationBuildTasks", "10.0.10.0")]
         public static void Main() {
             BondAnalytics.App.App app = new BondAnalytics.App.App();
             app.InitializeComponent();

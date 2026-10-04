@@ -435,6 +435,17 @@ test-results/
 # Icon must end with two \r
 Icon
 
+# The case-insensitive *.app rule also matches the WPF project folder on Windows.
+!BondAnalytics.App/
+!BondAnalytics.App/ViewModels/
+!BondAnalytics.App/Views/
+!BondAnalytics.App/ViewModels/PortfolioAnalyticsViewModel.cs
+!BondAnalytics.App/ViewModels/*.cs
+!BondAnalytics.App/Views/*.xaml
+!BondAnalytics.App/Views/*.cs
+!BondAnalytics.App/Views/PortfolioAnalyticsWindow.xaml
+!BondAnalytics.App/Views/PortfolioAnalyticsWindow.xaml.cs
+
 
 # Thumbnails
 ._*

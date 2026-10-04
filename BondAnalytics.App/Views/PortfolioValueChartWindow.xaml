@@ -1,0 +1,24 @@
+<Window x:Class="BondAnalytics.App.Views.PortfolioValueChartWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:oxy="http://oxyplot.org/wpf"
+        Title="Стоимость портфеля" Width="1280" Height="820"
+        MinWidth="900" MinHeight="600" Background="#F2F4F1"
+        FontFamily="Segoe UI">
+    <Grid Margin="20">
+        <Border Background="White" BorderBrush="#DCE3DE" BorderThickness="1" CornerRadius="4" Padding="16">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <StackPanel Margin="4,0,4,12">
+                    <TextBlock Text="Стоимость всего портфеля" FontSize="21" FontWeight="SemiBold" Foreground="#1D2C2A"/>
+                    <TextBlock Text="Крупные точки показывают пополнения/выводы. Наведите курсор на маркер для суммы и даты."
+                               FontSize="11" Foreground="#687773" Margin="0,4,0,0"/>
+                </StackPanel>
+                <oxy:PlotView Grid.Row="1" Model="{Binding PortfolioValuePlotModel}"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

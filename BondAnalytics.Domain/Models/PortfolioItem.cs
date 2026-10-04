@@ -5,11 +5,12 @@
         public string Ticker { get; }
         public string Name { get; }
         public string Uid { get; }
+        public string InstrumentType { get; }
         public int Lot { get; }
         public decimal Quantity { get; }
         public decimal AveragePrice { get; }
         public decimal CurrentPrice { get; }
-        public decimal AccruedInterest { get; }
+        public decimal AccruedInterestPerBond { get; }
         public decimal Nominal { get; }
         public decimal Coupon { get; }
         public int CouponsPerYear { get; }
@@ -20,11 +21,12 @@
             string ticker,
             string name,
             string uid,
+            string instrumentType,
             int lot,
             decimal quantity,
             decimal averagePrice,
             decimal currentPrice,
-            decimal accruedInterest,
+            decimal accruedInterestPerBond,
             decimal nominal,
             decimal coupon,
             int couponsPerYear,
@@ -35,11 +37,12 @@
             Ticker = ticker;
             Name = name;
             Uid = uid;
+            InstrumentType = instrumentType;
             Lot = lot;
             Quantity = quantity;
             AveragePrice = averagePrice;
             CurrentPrice = currentPrice;
-            AccruedInterest = accruedInterest;
+            AccruedInterestPerBond = accruedInterestPerBond;
 
             Nominal = nominal;
             Coupon = coupon;

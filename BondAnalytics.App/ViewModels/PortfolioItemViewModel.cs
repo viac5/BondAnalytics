@@ -26,16 +26,18 @@ public class PortfolioItemViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(Profit));
             OnPropertyChanged(nameof(TotalValue));
             OnPropertyChanged(nameof(FullValue));
-            //OnPropertyChanged(nameof(CurrentYield));   // доходность меняется при изменении цены
+            OnPropertyChanged(nameof(CurrentYield));
+            OnPropertyChanged(nameof(IsProfitPositive));
+            OnPropertyChanged(nameof(IsProfitNegative));
         }
     }
 
     public decimal AveragePrice { get; }
     public decimal Quantity { get; }
-    public decimal AccruedInterest { get; }
+    public decimal AccruedInterestPerBond { get; }
 
     public decimal TotalValue => Quantity * CurrentPrice;
-    public decimal TotalAccruedInterest => Quantity * AccruedInterest;
+    public decimal TotalAccruedInterest => Quantity * AccruedInterestPerBond;
     public decimal FullValue => TotalValue + TotalAccruedInterest;
 
     public decimal Profit => (CurrentPrice - AveragePrice) * Quantity;
@@ -43,10 +45,12 @@ public class PortfolioItemViewModel : INotifyPropertyChanged
     public bool IsProfitPositive => Profit > 0;
     public bool IsProfitNegative => Profit < 0;
 
-    public string Group => Ticker.StartsWith("SU") ? "ОФЗ" : "Корпоративные";
+    public string Group => !IsBond ? "Фонды и прочее" : Ticker.StartsWith("SU") ? "ОФЗ" : "Корпоративные";
 
     public string Ticker { get; }
     public string Name { get; }
+    public string InstrumentType { get; }
+    public bool IsBond => string.Equals(InstrumentType, "bond", StringComparison.OrdinalIgnoreCase);
     public int Lot { get; }
     public decimal Nominal { get; }
 
@@ -54,18 +58,19 @@ public class PortfolioItemViewModel : INotifyPropertyChanged
     public int CouponsPerYear { get; }
     public DateTime? NextCouponDate { get; }
 
-    public decimal CurrentYield => Nominal == 0 ? 0 : (Coupon * CouponsPerYear) / Nominal;
+    public decimal CurrentYield => !IsBond || CurrentPrice == 0 ? 0 : (Coupon * CouponsPerYear) / CurrentPrice;
 
     public PortfolioItemViewModel(PortfolioItem item)
     {
         Ticker = item.Ticker;
         Name = item.Name;
+        InstrumentType = item.InstrumentType;
         Uid = item.Uid;
         Lot = item.Lot;
         Nominal = item.Nominal;
         Quantity = item.Quantity;
         AveragePrice = item.AveragePrice;
-        AccruedInterest = item.AccruedInterest;
+        AccruedInterestPerBond = item.AccruedInterestPerBond;
 
         _currentPrice = item.CurrentPrice;
 
